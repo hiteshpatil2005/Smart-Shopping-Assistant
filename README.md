@@ -99,7 +99,7 @@ http://localhost:8000
 ```
 
 ```bash
-### ✅ Folder Tree
+### ✅ Folder Structure
 
 smart-shopping-assistant/
 ├── client/                   # React + Vite + Tailwind (Frontend)
