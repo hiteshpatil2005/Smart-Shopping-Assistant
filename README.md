@@ -9,7 +9,7 @@ Follow the steps below to clone and run the project locally.
 
 ---
 
-## Setup Command for react vue and tailwind (Frontend)
+## Setup Command for react vite and tailwind (Frontend)
 
 ```bash
 # Clone the project
