@@ -115,7 +115,7 @@ smart-shopping-assistant/
 │   ├── main.py
 │   ├── venv/                 # Python virtual environment
 │   └── __init__.py (optional)
-
+│
 ├── .gitignore
 └── README.md
 
