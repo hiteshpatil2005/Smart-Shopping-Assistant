@@ -2,7 +2,7 @@
 
 Smart Shopping Assistant is an AI-powered e-commerce frontend built using **ReactJS**, **Vite**, and **TailwindCSS**.
 
-This guide is for collaborators who want to clone the repo and run the frontend with a single copy-paste of all commands.
+Follow the following steps to clone this project in repository
 
 ---
 
@@ -41,6 +41,8 @@ http://localhost:5173
 smart-shopping-assistant/
 ├── client/         
 │   ├── src/
+│   │   ├── App.jsx
+│   │   └── main.jsx
 │   ├── index.html
 │   ├── vite.config.js
 │   ├── package.json
