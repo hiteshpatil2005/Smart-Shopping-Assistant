@@ -110,7 +110,7 @@ smart-shopping-assistant/
 │   ├── vite.config.js
 │   ├── package.json
 │   └── .gitignore
-
+│
 ├── server/                   # FastAPI (Backend)
 │   ├── main.py
 │   ├── venv/                 # Python virtual environment
