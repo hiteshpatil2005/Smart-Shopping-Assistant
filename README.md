@@ -70,9 +70,9 @@ venv\Scripts\activate
 ```
 
 ```bash
-# Install FastAPI and Uvicorn
+# Install FastAPI, Uvicorn and other dependencies
 
-pip install fastapi uvicorn
+pip install -r requirements.txt
 ```
 
 ### Create a file named main.py and add this code:
@@ -113,6 +113,7 @@ smart-shopping-assistant/
 │
 ├── server/                   # FastAPI (Backend)
 │   ├── main.py
+│   ├── requirements.txt
 │   ├── venv/                 # Python virtual environment
 │   └── __init__.py (optional)
 │
