@@ -1,9 +1,32 @@
 import React from 'react'
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom"
+
+//Pages
+import Error from './pages/Error';
+import Home from './pages/Home';
+
+//Components
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import NextPage from './pages/NextPage';
 
 const App = () => {
+  const pathname = useLocation().pathname;
+  const NoNavbarRoutes = ["/login", "/signup"];
+  const NoFooterRoutes = ["/login", "/signup"];
+
   return (
-    <div className='bg-amber-400'>
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero recusandae distinctio necessitatibus voluptates repellendus, corporis quo ipsa omnis veniam. Doloremque aut beatae perspiciatis voluptates natus in aperiam reprehenderit, optio maiores odio est quos tenetur. Architecto, officia inventore? Facilis, in deserunt nemo illum blanditiis officia accusamus.
+    <div>
+      {!NoNavbarRoutes.includes(pathname) && <Navbar/>}
+      <Routes>
+        {/* Public Routes  */}
+        <Route exact path='/' element={<Home />} /> 
+        <Route exact path='/next-page' element={<NextPage />} /> 
+
+        {/* Error Route For 404 Eror  */}
+        <Route exact path='*' element={<Error />} />
+      </Routes>
+      {!NoFooterRoutes.includes(pathname) && <Footer/>}
     </div>
   )
 }
