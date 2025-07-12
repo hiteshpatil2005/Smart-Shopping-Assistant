@@ -161,7 +161,7 @@ export default function EcommerceLanding() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center space-x-2 bg-yellow-500/10 backdrop-blur-sm border border-yellow-500/20 rounded-full px-6 py-3 mb-8">
               <Zap className="w-5 h-5 text-yellow-400 animate-pulse" />
-              <span className="text-yellow-300 font-semibold">AI-Powered Shopping Experience</span>
+              <span className="text-yellow-300 font-semibold">Meet to AI-Powered Shopping Assistant</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
               Find What You
@@ -199,7 +199,7 @@ export default function EcommerceLanding() {
                     }
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-20 pr-6 py-8 text-xl bg-white/95 backdrop-blur-sm border-2 border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-3xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
+                    className="w-full pl-20 pr-6 py-4 text-xl bg-white/95 backdrop-blur-sm border-2 border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-3xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
                   />
                 </div>
               </div>
@@ -208,11 +208,11 @@ export default function EcommerceLanding() {
               <div className="flex flex-col items-center space-y-3">
                 <button
                   onClick={() => setIsAISearch(!isAISearch)}
-                  className={`relative w-20 h-10 rounded-full transition-all duration-500 transform hover:scale-110 focus:outline-none shadow-xl ${isAISearch ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-400"
+                  className={`relative w-16 h-8 rounded-full transition-all duration-500 transform hover:scale-110 focus:outline-none shadow-xl ${isAISearch ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-400"
                     }`}
                 >
                   <div
-                    className={`absolute top-1 w-8 h-8 rounded-full shadow-lg transition-all duration-500 transform flex items-center justify-center ${isAISearch ? "translate-x-10 bg-white" : "translate-x-1 bg-white"
+                    className={`absolute top-1 w-6 h-6 rounded-full shadow-lg transition-all duration-500 transform flex items-center justify-center ${isAISearch ? "translate-x-8 bg-white" : "translate-x-1 bg-white"
                       }`}
                   >
                     <Sparkles className={`w-4 h-4 ${isAISearch ? "text-green-500 animate-spin" : "text-gray-400"}`} />
@@ -442,70 +442,6 @@ export default function EcommerceLanding() {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-blue-900 text-white py-12 border-t-4 border-yellow-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg">
-                  <ShoppingCart className="w-6 h-6 text-blue-900" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-yellow-500">ShopSphere</h3>
-                  <p className="text-white/70 text-sm">Your Shopping Universe</p>
-                </div>
-              </div>
-              <p className="text-white/80 text-sm leading-relaxed">
-                Your trusted destination for quality products, competitive prices, and exceptional customer service.
-              </p>
-            </div>
-            {[
-              {
-                title: "Quick Links",
-                links: ["About Us", "Contact", "FAQ", "Shipping Info"],
-              },
-              {
-                title: "Categories",
-                links: ["Electronics", "Fashion", "Home & Garden", "Sports"],
-              },
-              {
-                title: "Customer Service",
-                links: ["Returns", "Track Order", "Size Guide", "Support"],
-              },
-            ].map((section, index) => (
-              <div key={index} className="space-y-4">
-                <h4 className="font-semibold text-yellow-200">{section.title}</h4>
-                <ul className="space-y-2">
-                  {section.links.map((link, linkIndex) => (
-                    <li key={linkIndex}>
-                      <a
-                        href="#"
-                        className="text-white/70 hover:text-yellow-500 transition-colors text-sm hover:translate-x-1 transform duration-200 inline-block"
-                      >
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="border-t border-white/20 mt-8 pt-8 text-center">
-            <p className="text-white/60 text-sm">
-              &copy; 2024 ShopSphere. All rights reserved. |
-              <a href="#" className="text-yellow-500 hover:text-yellow-200 transition-colors ml-1 hover:underline">
-                Privacy Policy
-              </a>{" "}
-              |
-              <a href="#" className="text-yellow-500 hover:text-yellow-200 transition-colors ml-1 hover:underline">
-                Terms of Service
-              </a>
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
