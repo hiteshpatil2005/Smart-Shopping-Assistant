@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Search,
   ShoppingCart,
@@ -18,6 +18,7 @@ import {
   Zap,
   ChevronDown,
 } from "lucide-react"
+import axios from 'axios'
 
 const categories = [
   { name: "Electronics", icon: Smartphone },
@@ -30,123 +31,61 @@ const categories = [
   { name: "Automotive", icon: Car },
 ]
 
-const products = [
-  {
-    id: 1,
-    name: "Wireless Headphones",
-    price: 99.99,
-    originalPrice: 129.99,
-    image: "/placeholder.svg?height=200&width=200",
-    category: "Electronics",
-    rating: 4.5,
-    reviews: 128,
-    badge: "Best Seller",
-  },
-  {
-    id: 2,
-    name: "Summer Dress",
-    price: 49.99,
-    originalPrice: 79.99,
-    image: "/placeholder.svg?height=200&width=200",
-    category: "Fashion",
-    rating: 4.2,
-    reviews: 89,
-    badge: "New",
-  },
-  {
-    id: 3,
-    name: "Coffee Maker",
-    price: 129.99,
-    image: "/placeholder.svg?height=200&width=200",
-    category: "Home & Garden",
-    rating: 4.7,
-    reviews: 203,
-    badge: "Premium",
-  },
-  {
-    id: 4,
-    name: "Running Shoes",
-    price: 79.99,
-    originalPrice: 99.99,
-    image: "/placeholder.svg?height=200&width=200",
-    category: "Sports",
-    rating: 4.3,
-    reviews: 156,
-    badge: "Sale",
-  },
-  {
-    id: 5,
-    name: "Smartphone Case",
-    price: 24.99,
-    image: "/placeholder.svg?height=200&width=200",
-    category: "Electronics",
-    rating: 4.1,
-    reviews: 67,
-  },
-  {
-    id: 6,
-    name: "Yoga Mat",
-    price: 34.99,
-    image: "/placeholder.svg?height=200&width=200",
-    category: "Sports",
-    rating: 4.6,
-    reviews: 94,
-    badge: "Eco-Friendly",
-  },
-  {
-    id: 7,
-    name: "Skincare Set",
-    price: 89.99,
-    originalPrice: 119.99,
-    image: "/placeholder.svg?height=200&width=200",
-    category: "Beauty",
-    rating: 4.4,
-    reviews: 178,
-    badge: "Limited",
-  },
-  {
-    id: 8,
-    name: "Gaming Mouse",
-    price: 59.99,
-    image: "/placeholder.svg?height=200&width=200",
-    category: "Electronics",
-    rating: 4.8,
-    reviews: 245,
-    badge: "Top Rated",
-  },
-]
+
 
 export default function EcommerceLanding() {
   const [isAISearch, setIsAISearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
+  const [products, setproduct] = useState([])
+
+
+  const getBadge = (sold, rating) => {
+    if (sold > 30000) return "Best Seller"
+    if (rating >= 4.5) return "Top Rated"
+    if (sold < 5000) return "Limited"
+    return null
+  }
 
   const getBadgeStyle = (badge) => {
-    switch (badge) {
-      case "Best Seller":
-        return "bg-yellow-500 text-blue-900"
-      case "New":
-        return "bg-blue-900 text-white"
-      case "Premium":
-        return "bg-blue-900 text-yellow-200"
-      case "Sale":
-        return "bg-red-500 text-white"
-      case "Eco-Friendly":
-        return "bg-green-500 text-white"
-      case "Limited":
-        return "bg-purple-600 text-white"
-      case "Top Rated":
-        return "bg-yellow-200 text-blue-900"
-      default:
-        return "bg-gray-100 text-gray-800"
+  switch (badge) {
+    case "Best Seller":
+      return "bg-green-100 text-green-800"
+    case "Top Rated":
+      return "bg-blue-100 text-blue-800"
+    case "Limited":
+      return "bg-red-100 text-red-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+
+
+  const fetchProduct = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/products") // notice: /api/products
+      const allProducts = response.data
+
+      // Random shuffle and select 50
+      const random50 = allProducts.sort(() => Math.random() - 0.5).slice(0, 50)
+      setproduct(random50)
+
+      console.log("Fetched products:", random50)
+    } catch (error) {
+      console.error("Error fetching products:", error)
     }
   }
 
 
+  useEffect(() => {
+    fetchProduct();
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Enhanced Navy Header */}
-     
+
 
       {/* Redesigned Hero Section */}
       <div className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 overflow-hidden">
@@ -161,7 +100,7 @@ export default function EcommerceLanding() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center space-x-2 bg-yellow-500/10 backdrop-blur-sm border border-yellow-500/20 rounded-full px-6 py-3 mb-8">
               <Zap className="w-5 h-5 text-yellow-400 animate-pulse" />
-              <span className="text-yellow-300 font-semibold">Meet to AI-Powered Shopping Assistant</span>
+              <span className="text-yellow-300 font-semibold">AI-Powered Shopping Experience</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
               Find What You
@@ -199,7 +138,7 @@ export default function EcommerceLanding() {
                     }
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-20 pr-6 py-4 text-xl bg-white/95 backdrop-blur-sm border-2 border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-3xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
+                    className="w-full pl-20 pr-6 py-8 text-xl bg-white/95 backdrop-blur-sm border-2 border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-3xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
                   />
                 </div>
               </div>
@@ -208,11 +147,11 @@ export default function EcommerceLanding() {
               <div className="flex flex-col items-center space-y-3">
                 <button
                   onClick={() => setIsAISearch(!isAISearch)}
-                  className={`relative w-16 h-8 rounded-full transition-all duration-500 transform hover:scale-110 focus:outline-none shadow-xl ${isAISearch ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-400"
+                  className={`relative w-20 h-10 rounded-full transition-all duration-500 transform hover:scale-110 focus:outline-none shadow-xl ${isAISearch ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-400"
                     }`}
                 >
                   <div
-                    className={`absolute top-1 w-6 h-6 rounded-full shadow-lg transition-all duration-500 transform flex items-center justify-center ${isAISearch ? "translate-x-8 bg-white" : "translate-x-1 bg-white"
+                    className={`absolute top-1 w-8 h-8 rounded-full shadow-lg transition-all duration-500 transform flex items-center justify-center ${isAISearch ? "translate-x-10 bg-white" : "translate-x-1 bg-white"
                       }`}
                   >
                     <Sparkles className={`w-4 h-4 ${isAISearch ? "text-green-500 animate-spin" : "text-gray-400"}`} />
@@ -221,7 +160,7 @@ export default function EcommerceLanding() {
                 <span
                   className={`text-sm font-bold transition-all duration-300 ${isAISearch ? "text-green-400" : "text-blue-200"}`}
                 >
-                  AI Assistant
+                  AI Search
                 </span>
               </div>
             </div>
@@ -295,16 +234,16 @@ export default function EcommerceLanding() {
                     {/* Glow Effect */}
                     <div
                       className={`absolute -inset-2 rounded-3xl blur-xl transition-all duration-500 ${isSelected
-                          ? "bg-yellow-400/30 scale-110"
-                          : "bg-yellow-400/0 group-hover:bg-yellow-400/20 group-hover:scale-105"
+                        ? "bg-yellow-400/30 scale-110"
+                        : "bg-yellow-400/0 group-hover:bg-yellow-400/20 group-hover:scale-105"
                         }`}
                     ></div>
 
                     {/* Main Card */}
                     <div
                       className={`relative w-full h-32 rounded-2xl transition-all duration-500 transform ${isSelected
-                          ? "bg-gradient-to-br from-yellow-400 to-yellow-500 scale-110 shadow-2xl shadow-yellow-500/25"
-                          : "bg-gradient-to-br from-blue-800 to-blue-700 group-hover:from-yellow-500/20 group-hover:to-yellow-400/20 group-hover:scale-105 shadow-xl"
+                        ? "bg-gradient-to-br from-yellow-400 to-yellow-500 scale-110 shadow-2xl shadow-yellow-500/25"
+                        : "bg-gradient-to-br from-blue-800 to-blue-700 group-hover:from-yellow-500/20 group-hover:to-yellow-400/20 group-hover:scale-105 shadow-xl"
                         } border-2 ${isSelected ? "border-yellow-300" : "border-blue-600 group-hover:border-yellow-400/50"
                         }`}
                     >
@@ -319,8 +258,8 @@ export default function EcommerceLanding() {
                       <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
                         <div
                           className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${isSelected
-                              ? "bg-blue-900/90 shadow-lg"
-                              : "bg-yellow-500/10 group-hover:bg-yellow-500/20 group-hover:shadow-lg"
+                            ? "bg-blue-900/90 shadow-lg"
+                            : "bg-yellow-500/10 group-hover:bg-yellow-500/20 group-hover:shadow-lg"
                             }`}
                         >
                           <IconComponent
@@ -385,16 +324,17 @@ export default function EcommerceLanding() {
                 <div className="relative aspect-square bg-gray-50 overflow-hidden">
                   <img
                     src={product.image || "/placeholder.svg"}
-                    alt={product.name}
+                    alt={product.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  {product.badge && (
+                  {getBadge(product.sold, product.rating) && (
                     <span
-                      className={`absolute top-3 left-3 ${getBadgeStyle(product.badge)} font-medium text-xs px-2 py-1 shadow-sm animate-pulse rounded-full`}
+                      className={`absolute top-3 left-3 ${getBadgeStyle(getBadge(product.sold, product.rating))} font-medium text-xs px-2 py-1 shadow-sm animate-pulse rounded-full`}
                     >
-                      {product.badge}
+                      {getBadge(product.sold, product.rating)}
                     </span>
                   )}
+
                   <button className="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-600 hover:text-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 p-2 flex items-center justify-center">
                     <Heart className="h-4 w-4" />
                   </button>
@@ -405,7 +345,7 @@ export default function EcommerceLanding() {
                       {product.category}
                     </span>
                     <h3 className="font-semibold text-blue-900 group-hover:text-yellow-500 transition-colors text-lg">
-                      {product.name}
+                      {product.title}
                     </h3>
                   </div>
                   <div className="space-y-2">
@@ -425,7 +365,7 @@ export default function EcommerceLanding() {
                           />
                         ))}
                       </div>
-                      <span className="text-sm text-gray-500">({product.reviews})</span>
+                      <span className="text-sm text-gray-500">({product.reviews?.length || 0})</span>
                     </div>
                   </div>
                   {/* Enhanced Dynamic Button */}
@@ -445,3 +385,4 @@ export default function EcommerceLanding() {
     </div>
   )
 }
+

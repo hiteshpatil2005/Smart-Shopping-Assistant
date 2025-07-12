@@ -4,6 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from products import router as products_router
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware  # ✅ CORS import added
 from pydantic import BaseModel
 from typing import List, Optional
 from statistics import mean
@@ -187,7 +188,18 @@ def compute_sentiment_score(matched_df):
     matched_df['sentiment_score'] = scores
     return matched_df
 
+# ✅ FastAPI App Initialization with CORS
 app = FastAPI(title="Smart Shopping Assistant", description="Backend for Smart Shopping Assistant")
+
+# ✅ Enable CORS for localhost:5173 (React frontend)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(products_router, prefix="/api", tags=["products"])
 
 @app.on_event("startup")
