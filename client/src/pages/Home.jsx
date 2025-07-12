@@ -221,7 +221,7 @@ export default function EcommerceLanding() {
                 <span
                   className={`text-sm font-bold transition-all duration-300 ${isAISearch ? "text-green-400" : "text-blue-200"}`}
                 >
-                  AI Search
+                  AI Assistant
                 </span>
               </div>
             </div>
