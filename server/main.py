@@ -4,7 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from products import router as products_router
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List, Optional
 from statistics import mean
 from sklearn.metrics.pairwise import cosine_similarity
@@ -13,10 +13,11 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from database import db
 
-# -------------------- Config --------------------
 load_dotenv()
 hf_token = os.getenv("HF_TOKEN")
+
 model = ChatGoogleGenerativeAI(model='gemini-2.0-flash')
 embedding = HuggingFaceEndpointEmbeddings(
     repo_id="sentence-transformers/all-MiniLM-L6-v2",
@@ -25,8 +26,6 @@ embedding = HuggingFaceEndpointEmbeddings(
 )
 sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
 
-
-# -------------------- Pydantic Models --------------------
 class RecommendationRequest(BaseModel):
     query: str
 
@@ -53,7 +52,6 @@ class RankingResult(BaseModel):
     best_product_index: int
     reasoning: str
 
-# -------------------- Chains --------------------
 parser = PydanticOutputParser(pydantic_object=Keywords)
 keywordExtractionPrompt = PromptTemplate(
     template='Extract the following fields from the query: product_type, price_max, use_case, recipient, must_have_features, brand_preference, avoid_features, urgency\n\nQuery: {query}\n\n{format_instruction}',
@@ -68,8 +66,7 @@ ranking_prompt = PromptTemplate(
     template="""You are a shopping expert.
 
 User query: "{query}"
-Product data:
-{product_data}
+Product data: {product_data}
 
 Evaluate based on:
 1. Relevance to query
@@ -83,7 +80,6 @@ Evaluate based on:
 )
 ranking_chain = ranking_prompt | model | ranking_parser
 
-# -------------------- Utility Functions --------------------
 def format_output(result: Keywords):
     return {
         "product_type": result.product_type,
@@ -97,76 +93,152 @@ def format_output(result: Keywords):
         "urgency": result.urgency,
     }
 
+async def load_products_from_db():
+    try:
+        if db.db is None:
+            await db.connect()
+
+        cursor = db.products.find()
+        products = []
+        async for product in cursor:
+            product["_id"] = str(product["_id"])
+            products.append(product)
+
+        if len(products) == 0:
+            raise HTTPException(status_code=404, detail="No products found in database")
+
+        df = pd.DataFrame(products)
+        if 'reviews' in df.columns:
+            df['reviews'] = df['reviews'].apply(
+                lambda x: ast.literal_eval(x) if isinstance(x, str) else x
+            )
+        return df
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
 def filter_dataset(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
     filtered_df = df.copy()
+
     if filters['product_type']:
-        filtered_df = filtered_df[filtered_df['category'].str.contains(filters['product_type'], case=False, na=False)]
+        keywords = filters['product_type'].lower().split()
+        condition = pd.Series([True] * len(filtered_df))
+        for word in keywords:
+            word_condition = (
+                filtered_df['title'].str.contains(word, case=False, na=False) |
+                filtered_df['description'].str.contains(word, case=False, na=False)
+            )
+            if 'category' in filtered_df.columns:
+                word_condition |= filtered_df['category'].str.contains(word, case=False, na=False)
+            condition &= word_condition
+        filtered_df = filtered_df[condition]
+
     if filters['price_max']:
         filtered_df = filtered_df[filtered_df['price'] <= filters['price_max']]
+
     if filters['price_min']:
         filtered_df = filtered_df[filtered_df['price'] >= filters['price_min']]
+
     if filters['brand_preference']:
         filtered_df = filtered_df[filtered_df['title'].str.contains(filters['brand_preference'], case=False, na=False)]
+
     if filters['urgency'] and "urgent" in filters['urgency'].lower():
         filtered_df = filtered_df.sort_values(by="sold", ascending=False).head(20)
+
     for feature in filters['must_have_features']:
-        filtered_df = filtered_df[filtered_df['description'].str.contains(feature, case=False, na=False) |
-                                  filtered_df['tags'].str.contains(feature, case=False, na=False)]
+        condition = filtered_df['description'].str.contains(feature, case=False, na=False)
+        if 'tags' in filtered_df.columns:
+            condition = condition | filtered_df['tags'].str.contains(feature, case=False, na=False)
+        filtered_df = filtered_df[condition]
+
     for avoid in filters['avoid_features']:
-        filtered_df = filtered_df[~filtered_df['description'].str.contains(avoid, case=False, na=False) &
-                                  ~filtered_df['tags'].str.contains(avoid, case=False, na=False)]
+        condition = ~filtered_df['description'].str.contains(avoid, case=False, na=False)
+        if 'tags' in filtered_df.columns:
+            condition = condition & ~filtered_df['tags'].str.contains(avoid, case=False, na=False)
+        filtered_df = filtered_df[condition]
+
     return filtered_df.reset_index(drop=True)
 
 def semantic_match(query, df: pd.DataFrame, top_k=10):
-    df['search_text'] = (
-        df['title'].fillna('') + " " +
-        df['description'].fillna('') + " " +
-        df['tags'].apply(lambda x: ' '.join(x) if isinstance(x, list) else str(x))
-    )
-    doc_embeddings = embedding.embed_documents(df['search_text'].tolist())
-    query_embedding = embedding.embed_query(query)
-    df['similarity_score'] = cosine_similarity([query_embedding], doc_embeddings)[0]
-    return df.sort_values(by='similarity_score', ascending=False).head(top_k).reset_index(drop=True)
+    search_text_parts = [df['title'].fillna(''), df['description'].fillna('')]
+    if 'tags' in df.columns:
+        search_text_parts.append(df['tags'].apply(lambda x: ' '.join(x) if isinstance(x, list) else str(x)))
+    df['search_text'] = pd.concat(search_text_parts, axis=1).apply(lambda row: ' '.join(row.dropna().astype(str)), axis=1)
 
+    try:
+        doc_embeddings = embedding.embed_documents(df['search_text'].tolist())
+        query_embedding = embedding.embed_query(query)
+        df['similarity_score'] = cosine_similarity([query_embedding], doc_embeddings)[0]
+        return df.sort_values(by='similarity_score', ascending=False).head(top_k).reset_index(drop=True)
+    except Exception:
+        return df.head(top_k).reset_index(drop=True)
 
 def compute_sentiment_score(matched_df):
     scores = []
-    for reviews in matched_df['reviews']:
-        if not isinstance(reviews, list): scores.append(0); continue
-        sentiments = sentiment_pipeline(reviews[:10])
-        score = mean([1 if s['label'] == 'POSITIVE' else 0 for s in sentiments])
-        scores.append(round(score * 100, 2))
+    for reviews in matched_df.get('reviews', []):
+        if not isinstance(reviews, list):
+            scores.append(0)
+            continue
+        try:
+            sentiments = sentiment_pipeline(reviews[:10])
+            score = mean([1 if s['label'] == 'POSITIVE' else 0 for s in sentiments])
+            scores.append(round(score * 100, 2))
+        except Exception:
+            scores.append(0)
     matched_df['sentiment_score'] = scores
     return matched_df
 
-# -------------------- FastAPI App --------------------
-app = FastAPI()
+app = FastAPI(title="Smart Shopping Assistant", description="Backend for Smart Shopping Assistant")
+app.include_router(products_router, prefix="/api", tags=["products"])
 
-# Include the /products route
-app.include_router(products_router)
+@app.on_event("startup")
+async def startup_event():
+    try:
+        await db.connect()
+        await db.products.find_one()
+    except Exception:
+        pass
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await db.close()
 
 @app.get("/")
 def root():
     return {"message": "Smart Shopping Assistant Backend is running!"}
 
 @app.post("/recommend", response_model=RecommendationResponse)
-def recommend_product(req: RecommendationRequest):
+async def recommend_product(req: RecommendationRequest):
     try:
         result = chain.invoke({'query': req.query})
         filters = format_output(result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Query parsing failed: {str(e)}")
 
-    df = pd.read_json("dataset.json")
-    df['reviews'] = df['reviews'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    df = await load_products_from_db()
     filtered = filter_dataset(df, filters)
+
     if filtered.empty:
-        raise HTTPException(status_code=404, detail="No matching products found")
+        relaxed_filters = {
+            "product_type": filters.get("product_type"),
+            "price_max": None,
+            "price_min": None,
+            "use_case": None,
+            "recipient": None,
+            "must_have_features": [],
+            "brand_preference": None,
+            "avoid_features": [],
+            "urgency": None,
+        }
+        filtered = filter_dataset(df, relaxed_filters)
+        if filtered.empty:
+            raise HTTPException(status_code=404, detail="No matching products found")
 
     matched = semantic_match(req.query, filtered)
     matched = compute_sentiment_score(matched)
 
-    product_subset = matched[['title', 'description', 'rating', 'sentiment_score', 'similarity_score', 'sold', 'price']]
+    product_subset_columns = ['title', 'description', 'rating', 'sentiment_score', 'similarity_score', 'sold', 'price']
+    available_columns = [col for col in product_subset_columns if col in matched.columns]
+    product_subset = matched[available_columns]
     product_data_str = product_subset.to_string(index=True)
 
     try:
@@ -176,17 +248,20 @@ def recommend_product(req: RecommendationRequest):
             raise Exception("Invalid index")
         top_product = matched.iloc[idx]
         reasoning = ranking_response.reasoning
-    except:
-        matched['normalized_sales'] = (matched['sold'] - matched['sold'].min()) / (matched['sold'].max() - matched['sold'].min() + 1e-5)
-        matched['combined_score'] = 0.7 * matched['similarity_score'] + 0.3 * matched['normalized_sales']
+    except Exception:
+        if 'sold' in matched.columns:
+            matched['normalized_sales'] = (matched['sold'] - matched['sold'].min()) / (matched['sold'].max() - matched['sold'].min() + 1e-5)
+            matched['combined_score'] = 0.7 * matched['similarity_score'] + 0.3 * matched['normalized_sales']
+        else:
+            matched['combined_score'] = matched['similarity_score']
         top_product = matched.sort_values(by='combined_score', ascending=False).iloc[0]
         reasoning = "Fallback: Based on similarity and sales performance"
 
     return RecommendationResponse(
         title=top_product['title'],
         price=top_product['price'],
-        rating=top_product['rating'],
-        sentiment_score=top_product['sentiment_score'],
-        sold=top_product['sold'],
+        rating=top_product.get('rating', 0.0),
+        sentiment_score=top_product.get('sentiment_score', 0.0),
+        sold=top_product.get('sold', 0),
         reasoning=reasoning
     )
