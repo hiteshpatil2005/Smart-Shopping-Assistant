@@ -102,12 +102,12 @@ export default function EcommerceLanding() {
               <Zap className="w-5 h-5 text-yellow-400 animate-pulse" />
               <span className="text-yellow-300 font-semibold">AI-Powered Shopping Experience</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
               Find What You
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-500 animate-pulse">
                 Love to Buy
               </span>
-            </h1>
+            </h2>
             <p className="text-xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
               Discover millions of products with our intelligent search. Let AI help you find exactly what you're
               looking for, or explore trending items curated just for you.
@@ -134,11 +134,11 @@ export default function EcommerceLanding() {
                   <input
                     type="text"
                     placeholder={
-                      isAISearch ? "✨ Ask me anything about products..." : "🔍 Search millions of products..."
+                      isAISearch ? "✨ Ask me anything about products..." : " Search millions of products..."
                     }
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-20 pr-6 py-8 text-xl bg-white/95 backdrop-blur-sm border-2 border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-3xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
+                    className="w-full pl-20 pr-6 py-6 text-xl bg-white/95 backdrop-blur-sm  border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-3xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
                   />
                 </div>
               </div>
