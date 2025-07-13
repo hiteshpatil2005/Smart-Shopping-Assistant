@@ -373,97 +373,126 @@ export default function EcommerceLanding() {
       </div>
 
       {/* AI Recommendation Section */}
-{aiRecommendation && (
-  <div className="py-16 bg-gradient-to-r from-green-50 to-blue-50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center space-x-2 bg-green-500/20 backdrop-blur-sm border border-green-500/30 rounded-full px-6 py-3 mb-6">
-          <Sparkles className="w-5 h-5 text-green-600 animate-pulse" />
-          <span className="text-green-700 font-semibold text-sm uppercase tracking-wider">AI Recommendation</span>
-        </div>
-        <h2 className="text-4xl font-bold text-blue-900 mb-4">Perfect Match Found!</h2>
-        <p className="text-blue-700 text-lg">Our AI has analyzed your query and found the best product for you</p>
-      </div>
-
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-green-200">
-          <div className="bg-gradient-to-r from-green-500 to-blue-500 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-white" />
+      {aiRecommendation && (
+        <div className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 backdrop-blur-sm border border-emerald-500/20 rounded-full px-8 py-4 mb-8">
+                <div className="relative">
+                  <Sparkles className="w-6 h-6 text-emerald-600" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-white">AI Recommended</h3>
-                  <p className="text-green-100">Personalized just for you</p>
+                <span className="text-emerald-700 font-semibold text-sm uppercase tracking-wider">AI Recommendation</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+                Perfect Match 
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600"> Found</span>
+              </h2>
+              <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                Our AI has analyzed your query and found the ideal product tailored to your needs
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200/60">
+              {/* Header Section */}
+              <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-blue-600 px-8 py-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                      <Award className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">AI Recommended</h3>
+                      <p className="text-emerald-100 font-medium">Personalized selection</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-4xl font-bold text-white mb-2">${aiRecommendation.price}</div>
+                    <div className="flex items-center space-x-2 justify-end">
+                      <div className="flex items-center space-x-1 bg-white/20 rounded-full px-3 py-1">
+                        <Star className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+                        <span className="text-white font-semibold">{aiRecommendation.rating}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-white">${aiRecommendation.price}</div>
-                <div className="flex items-center space-x-1 justify-end">
-                  <Star className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-                  <span className="text-white font-semibold">{aiRecommendation.rating}</span>
+
+              {/* Content Section */}
+              <div className="p-8 md:p-12">
+                <div className="grid lg:grid-cols-2 gap-12 items-start">
+                  {/* Product Image */}
+                  <div className="space-y-6">
+                    {aiRecommendation.images?.[0] && (
+                      <div className="relative group">
+                        <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="relative bg-slate-50 rounded-2xl p-8 border border-slate-200">
+                          <img
+                            src={aiRecommendation.images[0]}
+                            alt={aiRecommendation.title}
+                            className="w-full h-80 object-contain rounded-xl transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="space-y-8">
+                    <div>
+                      <h4 className="text-3xl font-bold text-slate-900 mb-4 leading-tight">
+                        {aiRecommendation.title}
+                      </h4>
+                      
+                      {/* Stats Grid */}
+                      <div className="grid grid-cols-3 gap-4 mb-8">
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border border-blue-100">
+                          <TrendingUp className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                          <div className="text-xl font-bold text-blue-900">{aiRecommendation.sentiment_score}%</div>
+                          <div className="text-xs text-blue-600 font-medium">Positive Reviews</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 text-center border border-emerald-100">
+                          <Users className="w-6 h-6 text-emerald-600 mx-auto mb-2" />
+                          <div className="text-xl font-bold text-emerald-900">{aiRecommendation.sold.toLocaleString()}</div>
+                          <div className="text-xs text-emerald-600 font-medium">Units Sold</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 text-center border border-amber-100">
+                          <Star className="w-6 h-6 text-amber-600 mx-auto mb-2" />
+                          <div className="text-xl font-bold text-amber-900">{aiRecommendation.rating}/5</div>
+                          <div className="text-xs text-amber-600 font-medium">Rating</div>
+                        </div>
+                      </div>
+
+                      {/* AI Reasoning */}
+                      <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl p-6 border border-slate-200">
+                        <h5 className="font-semibold text-slate-900 mb-3 flex items-center">
+                          <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center mr-3">
+                            <CheckCircle className="w-4 h-4 text-white" />
+                          </div>
+                          Why This Product Matches Your Needs
+                        </h5>
+                        <p className="text-slate-700 leading-relaxed">{aiRecommendation.reasoning}</p>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <button className="flex-1 bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center group">
+                        <ShoppingCart className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                        Add to Cart
+                      </button>
+                      <button className="flex-1 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold py-4 px-8 rounded-xl transition-all duration-300 flex items-center justify-center group">
+                        <Heart className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                        Save for Later
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <div className="p-8">
-            {/* 🔥 Image of AI-recommended product */}
-            {aiRecommendation.images?.[0] && (
-              <div className="mb-8">
-                <img
-                  src={aiRecommendation.images[0]}
-                  alt={aiRecommendation.title}
-                  className="w-full h-80 object-contain rounded-2xl border border-gray-200 shadow-md"
-                />
-              </div>
-            )}
-
-            <h4 className="text-2xl font-bold text-blue-900 mb-6">{aiRecommendation.title}</h4>
-
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-blue-50 rounded-xl p-6 text-center">
-                <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-blue-900">{aiRecommendation.sentiment_score}%</div>
-                <div className="text-sm text-blue-600">Positive Reviews</div>
-              </div>
-              <div className="bg-green-50 rounded-xl p-6 text-center">
-                <Users className="w-8 h-8 text-green-600 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-green-900">{aiRecommendation.sold.toLocaleString()}</div>
-                <div className="text-sm text-green-600">Units Sold</div>
-              </div>
-              <div className="bg-yellow-50 rounded-xl p-6 text-center">
-                <Star className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-yellow-900">{aiRecommendation.rating}/5</div>
-                <div className="text-sm text-yellow-600">Customer Rating</div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 rounded-xl p-6 mb-8">
-              <h5 className="font-semibold text-blue-900 mb-3 flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                Why This Product?
-              </h5>
-              <p className="text-gray-700 leading-relaxed">{aiRecommendation.reasoning}</p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                Add to Cart
-              </button>
-              <button className="flex-1 bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 font-bold py-4 px-8 rounded-xl transition-all duration-300 flex items-center justify-center">
-                <Heart className="w-5 h-5 mr-2" />
-                Add to Wishlist
-              </button>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
 
       {/* Products Section */}
