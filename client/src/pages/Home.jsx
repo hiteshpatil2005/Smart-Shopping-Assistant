@@ -26,7 +26,7 @@ import {
 import axios from 'axios'
 
 const categories = [
-  { name: "Electronics", icon: Smartphone },
+  { name: "Mobile", icon: Smartphone },
   { name: "Fashion", icon: Shirt },
   { name: "Home", icon: Home },
   { name: "Sports", icon: Dumbbell },
@@ -81,7 +81,7 @@ export default function EcommerceLanding() {
   // AI Recommendation Function
   const getAIRecommendation = async (query) => {
     if (!query.trim()) return
-    
+
     setIsLoading(true)
     try {
       const response = await axios.post("http://localhost:8000/recommend", {
@@ -114,9 +114,9 @@ export default function EcommerceLanding() {
   // Handle Search
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
-    
+
     setSearchPerformed(true)
-    
+
     if (isAISearch) {
       await getAIRecommendation(searchQuery)
       setFilteredProducts([]) // Clear normal products when showing AI recommendation
@@ -235,22 +235,19 @@ export default function EcommerceLanding() {
               <div className="flex flex-col items-center space-y-3">
                 <button
                   onClick={handleToggleChange}
-                  className={`relative w-20 h-10 rounded-full transition-all duration-500 transform hover:scale-110 focus:outline-none shadow-xl ${
-                    isAISearch ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-400"
-                  }`}
+                  className={`relative w-20 h-10 rounded-full transition-all duration-500 transform hover:scale-110 focus:outline-none shadow-xl ${isAISearch ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-400"
+                    }`}
                 >
                   <div
-                    className={`absolute top-1 w-8 h-8 rounded-full shadow-lg transition-all duration-500 transform flex items-center justify-center ${
-                      isAISearch ? "translate-x-10 bg-white" : "translate-x-1 bg-white"
-                    }`}
+                    className={`absolute top-1 w-8 h-8 rounded-full shadow-lg transition-all duration-500 transform flex items-center justify-center ${isAISearch ? "translate-x-10 bg-white" : "translate-x-1 bg-white"
+                      }`}
                   >
                     <Sparkles className={`w-4 h-4 ${isAISearch ? "text-green-500" : "text-gray-400"}`} />
                   </div>
                 </button>
                 <span
-                  className={`text-sm font-bold transition-all duration-300 ${
-                    isAISearch ? "text-green-400" : "text-blue-200"
-                  }`}
+                  className={`text-sm font-bold transition-all duration-300 ${isAISearch ? "text-green-400" : "text-blue-200"
+                    }`}
                 >
                   AI Search
                 </span>
@@ -327,21 +324,18 @@ export default function EcommerceLanding() {
                 >
                   <div className="relative">
                     <div
-                      className={`absolute -inset-2 rounded-3xl blur-xl transition-all duration-500 ${
-                        isSelected
+                      className={`absolute -inset-2 rounded-3xl blur-xl transition-all duration-500 ${isSelected
                           ? "bg-yellow-400/30 scale-110"
                           : "bg-yellow-400/0 group-hover:bg-yellow-400/20 group-hover:scale-105"
-                      }`}
+                        }`}
                     ></div>
 
                     <div
-                      className={`relative w-full h-32 rounded-2xl transition-all duration-500 transform ${
-                        isSelected
+                      className={`relative w-full h-32 rounded-2xl transition-all duration-500 transform ${isSelected
                           ? "bg-gradient-to-br from-yellow-400 to-yellow-500 scale-110 shadow-2xl shadow-yellow-500/25"
                           : "bg-gradient-to-br from-blue-800 to-blue-700 group-hover:from-yellow-500/20 group-hover:to-yellow-400/20 group-hover:scale-105 shadow-xl"
-                      } border-2 ${
-                        isSelected ? "border-yellow-300" : "border-blue-600 group-hover:border-yellow-400/50"
-                      }`}
+                        } border-2 ${isSelected ? "border-yellow-300" : "border-blue-600 group-hover:border-yellow-400/50"
+                        }`}
                     >
                       {isSelected && (
                         <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-900 rounded-full flex items-center justify-center shadow-lg animate-bounce">
@@ -351,23 +345,20 @@ export default function EcommerceLanding() {
 
                       <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
                         <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                            isSelected
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${isSelected
                               ? "bg-blue-900/90 shadow-lg"
                               : "bg-yellow-500/10 group-hover:bg-yellow-500/20 group-hover:shadow-lg"
-                          }`}
+                            }`}
                         >
                           <IconComponent
-                            className={`w-6 h-6 transition-all duration-300 ${
-                              isSelected ? "text-yellow-400" : "text-yellow-400 group-hover:text-yellow-300"
-                            }`}
+                            className={`w-6 h-6 transition-all duration-300 ${isSelected ? "text-yellow-400" : "text-yellow-400 group-hover:text-yellow-300"
+                              }`}
                           />
                         </div>
 
                         <span
-                          className={`text-xs font-bold text-center leading-tight transition-all duration-300 ${
-                            isSelected ? "text-blue-900" : "text-white group-hover:text-yellow-200"
-                          }`}
+                          className={`text-xs font-bold text-center leading-tight transition-all duration-300 ${isSelected ? "text-blue-900" : "text-white group-hover:text-yellow-200"
+                            }`}
                         >
                           {category.name}
                         </span>
@@ -419,7 +410,7 @@ export default function EcommerceLanding() {
 
                 <div className="p-8">
                   <h4 className="text-2xl font-bold text-blue-900 mb-6">{aiRecommendation.title}</h4>
-                  
+
                   <div className="grid md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-blue-50 rounded-xl p-6 text-center">
                       <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-3" />
@@ -468,8 +459,8 @@ export default function EcommerceLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-blue-900 mb-4">
-              {searchPerformed && !isAISearch ? `Search Results for "${searchQuery}"` : 
-               selectedCategory ? `${selectedCategory} Products` : "Featured Products"}
+              {searchPerformed && !isAISearch ? `Search Results for "${searchQuery}"` :
+                selectedCategory ? `${selectedCategory} Products` : "Featured Products"}
             </h2>
             <p className="text-blue-700 text-lg">
               {filteredProducts.length > 0 ? `${filteredProducts.length} products found` : "No products found"}
@@ -485,7 +476,7 @@ export default function EcommerceLanding() {
                 >
                   <div className="relative aspect-square bg-gray-50 overflow-hidden">
                     <img
-                      src={product.image || "/placeholder.svg"}
+                      src={(product.images && product.images[0]) || "/placeholder.svg"}
                       alt={product.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
@@ -521,9 +512,8 @@ export default function EcommerceLanding() {
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`w-4 h-4 transition-colors duration-200 ${
-                                i < Math.floor(product.rating) ? "text-yellow-500 fill-yellow-500" : "text-gray-300"
-                              }`}
+                              className={`w-4 h-4 transition-colors duration-200 ${i < Math.floor(product.rating) ? "text-yellow-500 fill-yellow-500" : "text-gray-300"
+                                }`}
                             />
                           ))}
                         </div>
