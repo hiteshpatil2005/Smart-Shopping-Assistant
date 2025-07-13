@@ -30,6 +30,7 @@ sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncas
 class RecommendationRequest(BaseModel):
     query: str
 
+
 class RecommendationResponse(BaseModel):
     title: str
     price: float
@@ -37,6 +38,8 @@ class RecommendationResponse(BaseModel):
     sentiment_score: float
     sold: int
     reasoning: str
+    images: Optional[List[str]] = []  
+
 
 class Keywords(BaseModel):
     product_type: str
@@ -64,16 +67,35 @@ chain = keywordExtractionPrompt | model | parser
 ranking_parser = PydanticOutputParser(pydantic_object=RankingResult)
 ranking_prompt = PromptTemplate(
     input_variables=['query', 'product_data'],
-    template="""You are a shopping expert.
+    template="""You are an expert product analyst. Analyze these products and identify the single BEST match.
 
-User query: "{query}"
-Product data: {product_data}
+USER REQUEST: "{query}"
+PRODUCTS: {product_data}
 
-Evaluate based on:
-1. Relevance to query
-2. Rating & sentiment
-3. Sales (sold column)
-4. Price-performance balance
+SCORING CRITERIA (weighted):
+1. REQUEST ALIGNMENT (40%) - How well it fulfills the user's specific requirements and needs
+2. CUSTOMER SATISFACTION (30%) - Customer ratings, review feedback, brand reputation (prefer 4.0+ stars)
+3. MARKET PERFORMANCE (20%) - Sales success, competitive pricing, overall value
+4. PURCHASE VIABILITY (10%) - Price reasonableness, availability
+
+ANALYSIS PROCESS:
+- Score each product 1-10 per criterion
+- Calculate weighted scores (max 10.0)
+- Rank by total score
+- Choose the highest-scoring product as your recommendation
+
+OUTPUT FORMAT:
+1. Brief ranking of all products with scores and key strengths/weaknesses
+2. Clear #1 RECOMMENDATION with justification
+3. Any significant trade-offs or alternatives worth considering
+
+IMPORTANT: 
+- Always refer to products by their actual NAME, not technical terms
+- Use customer-friendly language (avoid "sentiment scores", "similarity scores", etc.)
+- Focus on practical benefits and real-world value for the customer
+- Write as if explaining to someone making a purchase decision
+
+Be decisive - choose one winner and defend it convincingly.
 
 {format_instructions}
 """,
@@ -269,11 +291,13 @@ async def recommend_product(req: RecommendationRequest):
         top_product = matched.sort_values(by='combined_score', ascending=False).iloc[0]
         reasoning = "Fallback: Based on similarity and sales performance"
 
+
     return RecommendationResponse(
         title=top_product['title'],
         price=top_product['price'],
         rating=top_product.get('rating', 0.0),
         sentiment_score=top_product.get('sentiment_score', 0.0),
         sold=top_product.get('sold', 0),
-        reasoning=reasoning
+        reasoning=reasoning,
+        images=top_product.get('images', []) 
     )
