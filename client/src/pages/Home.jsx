@@ -187,9 +187,9 @@ export default function EcommerceLanding() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Enhanced Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-800 to-blue-800 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-blue-800 via-blue-800 to-blue-800 overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-16 left-10 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
@@ -199,7 +199,7 @@ export default function EcommerceLanding() {
               <Zap className="w-5 h-5 text-yellow-400 animate-pulse" />
               <span className="text-yellow-300 font-semibold">AI-Powered Shopping Experience</span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
               Find What You
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-500 animate-pulse">
                 Love to Buy
@@ -304,7 +304,7 @@ export default function EcommerceLanding() {
       </div>
 
       {/* Categories Section */}
-      <div className="py-20 bg-gradient-to-br from-blue-900 to-blue-800 relative overflow-hidden">
+      <div className="py-10 bg-gradient-to-br from-blue-800 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div
             className="absolute inset-0"
