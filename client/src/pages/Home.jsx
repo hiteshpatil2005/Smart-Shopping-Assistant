@@ -24,8 +24,11 @@ import {
   CheckCircle,
 } from "lucide-react"
 import axios from 'axios'
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 
+=======
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
 
 const categories = [
   { name: "Mobile", icon: Smartphone },
@@ -114,6 +117,7 @@ export default function EcommerceLanding() {
   }
 
   // Handle Search
+<<<<<<< HEAD
   const navigate = useNavigate(); // Add this near the top of your EcommerceLanding component
 
   const handleSearch = async () => {
@@ -151,6 +155,21 @@ export default function EcommerceLanding() {
   };
 
 
+=======
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return
+
+    setSearchPerformed(true)
+
+    if (isAISearch) {
+      await getAIRecommendation(searchQuery)
+      setFilteredProducts([]) // Clear normal products when showing AI recommendation
+    } else {
+      performNormalSearch(searchQuery)
+      setAiRecommendation(null) // Clear AI recommendation when doing normal search
+    }
+  }
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
 
   // Handle Enter key press
   const handleKeyPress = (e) => {
@@ -187,7 +206,11 @@ export default function EcommerceLanding() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Enhanced Hero Section */}
+<<<<<<< HEAD
       <div className="relative bg-gradient-to-br from-blue-600 via-blue-800 to-blue-800 overflow-hidden">
+=======
+      <div className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-800 overflow-hidden">
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
         <div className="absolute inset-0">
           <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -351,15 +374,25 @@ export default function EcommerceLanding() {
                   <div className="relative">
                     <div
                       className={`absolute -inset-2 rounded-3xl blur-xl transition-all duration-500 ${isSelected
+<<<<<<< HEAD
                         ? "bg-yellow-400/30 scale-110"
                         : "bg-yellow-400/0 group-hover:bg-yellow-400/20 group-hover:scale-105"
+=======
+                          ? "bg-yellow-400/30 scale-110"
+                          : "bg-yellow-400/0 group-hover:bg-yellow-400/20 group-hover:scale-105"
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                         }`}
                     ></div>
 
                     <div
                       className={`relative w-full h-32 rounded-2xl transition-all duration-500 transform ${isSelected
+<<<<<<< HEAD
                         ? "bg-gradient-to-br from-yellow-400 to-yellow-500 scale-110 shadow-2xl shadow-yellow-500/25"
                         : "bg-gradient-to-br from-blue-800 to-blue-700 group-hover:from-yellow-500/20 group-hover:to-yellow-400/20 group-hover:scale-105 shadow-xl"
+=======
+                          ? "bg-gradient-to-br from-yellow-400 to-yellow-500 scale-110 shadow-2xl shadow-yellow-500/25"
+                          : "bg-gradient-to-br from-blue-800 to-blue-700 group-hover:from-yellow-500/20 group-hover:to-yellow-400/20 group-hover:scale-105 shadow-xl"
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                         } border-2 ${isSelected ? "border-yellow-300" : "border-blue-600 group-hover:border-yellow-400/50"
                         }`}
                     >
@@ -372,8 +405,13 @@ export default function EcommerceLanding() {
                       <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
                         <div
                           className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${isSelected
+<<<<<<< HEAD
                             ? "bg-blue-900/90 shadow-lg"
                             : "bg-yellow-500/10 group-hover:bg-yellow-500/20 group-hover:shadow-lg"
+=======
+                              ? "bg-blue-900/90 shadow-lg"
+                              : "bg-yellow-500/10 group-hover:bg-yellow-500/20 group-hover:shadow-lg"
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                             }`}
                         >
                           <IconComponent
@@ -411,7 +449,11 @@ export default function EcommerceLanding() {
                 <span className="text-emerald-700 font-semibold text-sm uppercase tracking-wider">AI Recommendation</span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+<<<<<<< HEAD
                 Perfect Match
+=======
+                Perfect Match 
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600"> Found</span>
               </h2>
               <p className="text-slate-600 text-lg max-w-2xl mx-auto">
@@ -469,7 +511,11 @@ export default function EcommerceLanding() {
                       <h4 className="text-3xl font-bold text-slate-900 mb-4 leading-tight">
                         {aiRecommendation.title}
                       </h4>
+<<<<<<< HEAD
 
+=======
+                      
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                       {/* Stats Grid */}
                       <div className="grid grid-cols-3 gap-4 mb-8">
                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border border-blue-100">
@@ -537,7 +583,14 @@ export default function EcommerceLanding() {
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {filteredProducts.map((product) => (
+<<<<<<< HEAD
                 <div key={product._id || product.id} className="group cursor-pointer hover:shadow-2xl transition-all duration-500 border border-gray-200 bg-white hover:border-yellow-500/30 hover:-translate-y-2 rounded-lg overflow-hidden">
+=======
+                <div
+                  key={product.id}
+                  className="group cursor-pointer hover:shadow-2xl transition-all duration-500 border border-gray-200 bg-white hover:border-yellow-500/30 hover:-translate-y-2 rounded-lg overflow-hidden"
+                >
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                   <div className="relative aspect-square bg-gray-50 overflow-hidden">
                     <img
                       src={(product.images && product.images[0]) || "/placeholder.svg"}
@@ -566,9 +619,15 @@ export default function EcommerceLanding() {
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
+<<<<<<< HEAD
                         <span className="text-2xl font-bold text-blue-900">₹{product.price}</span>
                         {product.originalPrice && (
                           <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
+=======
+                        <span className="text-2xl font-bold text-blue-900">${product.price}</span>
+                        {product.originalPrice && (
+                          <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                         )}
                       </div>
                       <div className="flex items-center space-x-1">
@@ -576,16 +635,25 @@ export default function EcommerceLanding() {
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
+<<<<<<< HEAD
                               className={`w-4 h-4 transition-colors duration-200 ${i < Math.round(product.rating) ? "text-yellow-500 fill-yellow-500" : "text-gray-300"
+=======
+                              className={`w-4 h-4 transition-colors duration-200 ${i < Math.floor(product.rating) ? "text-yellow-500 fill-yellow-500" : "text-gray-300"
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                                 }`}
                             />
                           ))}
                         </div>
+<<<<<<< HEAD
                         <span className="text-sm text-gray-500">
                           ({product.reviews?.length || 0} reviews)
                         </span>
                       </div>
 
+=======
+                        <span className="text-sm text-gray-500">({product.reviews?.length || 0})</span>
+                      </div>
+>>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
                     </div>
                     <button className="w-full bg-yellow-500 hover:bg-blue-900 text-blue-900 hover:text-white font-bold py-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 rounded-xl group/btn overflow-hidden relative">
                       <span className="relative z-10 flex items-center justify-center">
