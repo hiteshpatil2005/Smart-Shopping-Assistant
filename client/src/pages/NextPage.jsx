@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { ShoppingCart, Star, TrendingUp, Users, CheckCircle, Heart, ArrowRight } from "lucide-react"
@@ -111,14 +110,6 @@ const NextPage = () => {
           </>
         )}
       </div>
-=======
-import React from 'react'
-
-const NextPage = () => {
-  return (
-    <div>
-      i m Next page
->>>>>>> a6761be5bedc50def202ba6b7976c3d1d70ac9f1
     </div>
   )
 }
