@@ -1,0 +1,29 @@
+# FastAPI
+fastapi 
+uvicorn
+
+# LangChain Core
+langchain
+langchain-core 
+
+# Google Gemini (PaLM) Integration
+langchain-google-genai
+google-generativeai
+
+# Hugging Face Integration
+langchain-huggingface
+transformers
+huggingface-hub
+
+# Environment Variable Management 
+python-dotenv
+
+# Utilities
+numpy
+scikit-learn
+pandas
+sentence-transformers
+
+# DB
+motor
+certifi
