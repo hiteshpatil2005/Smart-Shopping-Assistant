@@ -114,7 +114,7 @@ export default function EcommerceLanding() {
   }
 
   // Handle Search
-  const navigate = useNavigate(); // Add this near the top of your EcommerceLanding component
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -149,8 +149,6 @@ export default function EcommerceLanding() {
       setAiRecommendation(null);
     }
   };
-
-
 
   // Handle Enter key press
   const handleKeyPress = (e) => {
@@ -523,11 +521,11 @@ export default function EcommerceLanding() {
 
       {/* Products Section */}
       <div className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-1 sm:px-2 lg:px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-blue-900 mb-4">
               {searchPerformed && !isAISearch ? `Search Results for "${searchQuery}"` :
-                selectedCategory ? `${selectedCategory} Products` : "Featured Products"}
+                selectedCategory ? `${selectedCategory} Products` : "All Products"}
             </h2>
             <p className="text-blue-700 text-lg">
               {filteredProducts.length > 0 ? `${filteredProducts.length} products found` : "No products found"}
@@ -535,68 +533,70 @@ export default function EcommerceLanding() {
           </div>
 
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {filteredProducts.map((product) => (
-                <div key={product._id || product.id} className="group cursor-pointer hover:shadow-2xl transition-all duration-500 border border-gray-200 bg-white hover:border-yellow-500/30 hover:-translate-y-2 rounded-lg overflow-hidden">
-                  <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                    <img
-                      src={(product.images && product.images[0]) || "/placeholder.svg"}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    {getBadge(product.sold, product.rating) && (
-                      <span
-                        className={`absolute top-3 left-3 ${getBadgeStyle(getBadge(product.sold, product.rating))} font-medium text-xs px-2 py-1 shadow-sm rounded-full`}
-                      >
-                        {getBadge(product.sold, product.rating)}
-                      </span>
-                    )}
-                    <button className="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-600 hover:text-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 p-2">
-                      <Heart className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <div className="p-5 space-y-4">
-                    <div className="space-y-2">
-                      <span className="bg-yellow-500/10 text-blue-900 text-xs font-medium border border-yellow-500/20 px-2 py-1 rounded-full inline-block">
-                        {product.category}
-                      </span>
-                      <h3 className="font-semibold text-blue-900 group-hover:text-yellow-500 transition-colors text-lg">
-                        {product.title}
-                      </h3>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-2xl font-bold text-blue-900">₹{product.price}</span>
-                        {product.originalPrice && (
-                          <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 transition-colors duration-200 ${i < Math.round(product.rating) ? "text-yellow-500 fill-yellow-500" : "text-gray-300"
-                                }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          ({product.reviews?.length || 0} reviews)
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+              {filteredProducts.map((product) => {
+                const reviewCount = product.reviews?.length || product.reviewCount || 0;
+                return (
+                  <div key={product._id || product.id} className="group cursor-pointer hover:shadow-2xl transition-all duration-500 border border-gray-200 bg-white hover:border-yellow-500/30 hover:-translate-y-2 rounded-lg overflow-hidden">
+                    <div className="relative aspect-square bg-gray-50 overflow-hidden">
+                      <img
+                        src={(product.images && product.images[0]) || "/placeholder.svg"}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      {getBadge(product.sold, product.rating) && (
+                        <span
+                          className={`absolute top-3 left-3 ${getBadgeStyle(getBadge(product.sold, product.rating))} font-medium text-xs px-2 py-1 shadow-sm rounded-full`}
+                        >
+                          {getBadge(product.sold, product.rating)}
                         </span>
-                      </div>
-
+                      )}
+                      <button className="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-600 hover:text-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 p-2">
+                        <Heart className="h-4 w-4" />
+                      </button>
                     </div>
-                    <button className="w-full bg-yellow-500 hover:bg-blue-900 text-blue-900 hover:text-white font-bold py-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 rounded-xl group/btn overflow-hidden relative">
-                      <span className="relative z-10 flex items-center justify-center">
-                        Add to Cart
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
-                      </span>
-                      <div className="absolute inset-0 bg-blue-900 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300 origin-left"></div>
-                    </button>
+                    <div className="p-4 space-y-3">
+                      <div className="space-y-2">
+                        <span className="bg-yellow-500/10 text-blue-900 text-xs font-medium border border-yellow-500/20 px-2 py-1 rounded-full inline-block">
+                          {product.category}
+                        </span>
+                        <h3 className="font-semibold text-blue-900 group-hover:text-yellow-500 transition-colors text-sm line-clamp-2">
+                          {product.title}
+                        </h3>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg font-bold text-blue-900">₹{product.price}</span>
+                          {product.originalPrice && (
+                            <span className="text-xs text-gray-500 line-through">₹{product.originalPrice}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-3 h-3 transition-colors duration-200 ${i < Math.round(product.rating) ? "text-yellow-500 fill-yellow-500" : "text-gray-300"
+                                  }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            ({reviewCount} reviews)
+                          </span>
+                        </div>
+                      </div>
+                      <button className="w-full bg-yellow-500 hover:bg-blue-900 text-blue-900 hover:text-white font-bold py-2 text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 rounded-lg group/btn overflow-hidden relative">
+                        <span className="relative z-10 flex items-center justify-center">
+                          Add to Cart
+                          <ArrowRight className="w-3 h-3 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                        </span>
+                        <div className="absolute inset-0 bg-blue-900 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300 origin-left"></div>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : searchPerformed && !isAISearch ? (
             <div className="text-center py-12">
