@@ -28,9 +28,9 @@ import { useNavigate } from "react-router-dom";
 
 
 const categories = [
+  { name: "Home", icon: Home },
   { name: "Mobile", icon: Smartphone },
   { name: "Fashion", icon: Shirt },
-  { name: "Home", icon: Home },
   { name: "Sports", icon: Dumbbell },
   { name: "Books", icon: Book },
   { name: "Beauty", icon: Sparkles },
@@ -205,14 +205,14 @@ export default function EcommerceLanding() {
                 Love to Buy
               </span>
             </h2>
-            <p className="text-xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-blue-100 mb-10 max-w-3xl mx-auto leading-relaxed">
               Discover millions of products with our intelligent search. Let AI help you find exactly what you're
               looking for, or explore trending items curated just for you.
             </p>
           </div>
 
           {/* Enhanced Search Section */}
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-6">
               {/* Main Search Bar */}
               <div className="flex-1 w-full relative group">
@@ -238,12 +238,12 @@ export default function EcommerceLanding() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="w-full pl-20 pr-32 py-6 text-xl bg-white/95 backdrop-blur-sm border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-3xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
+                    className="w-full pl-20 pr-32 py-6 text-xl bg-white/95 backdrop-blur-sm border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-4xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
                   />
                   <button
                     onClick={handleSearch}
                     disabled={isLoading || !searchQuery.trim()}
-                    className="absolute right-2 top-2 bottom-2 px-6 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-blue-900 font-bold rounded-2xl transition-all duration-300 flex items-center space-x-2"
+                    className="absolute right-2 top-2 bottom-2 px-4 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-blue-900 font-bold rounded-4xl transition-all duration-300 flex items-center space-x-2"
                   >
                     {isLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -304,7 +304,7 @@ export default function EcommerceLanding() {
       </div>
 
       {/* Categories Section */}
-      <div className="py-10 bg-gradient-to-br from-blue-800 to-blue-800 relative overflow-hidden">
+      <div className="pb-10 bg-gradient-to-br from-blue-800 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div
             className="absolute inset-0"
