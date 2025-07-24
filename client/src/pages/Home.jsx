@@ -99,18 +99,23 @@ export default function EcommerceLanding() {
   }
 
   // Normal Search Function
-  const performNormalSearch = (query) => {
+  const performNormalSearch = async (query) => {
     if (!query.trim()) {
       setFilteredProducts(products)
       return
     }
-
-    const filtered = products.filter(product =>
-      product.title.toLowerCase().includes(query.toLowerCase()) ||
-      product.description?.toLowerCase().includes(query.toLowerCase()) ||
-      product.category?.toLowerCase().includes(query.toLowerCase())
-    )
-    setFilteredProducts(filtered)
+    setIsLoading(true)
+    try {
+      const response = await axios.post("http://localhost:8000/simple-search", {
+        query: query
+      })
+      setFilteredProducts(response.data.products)
+    } catch (error) {
+      console.error("Error performing normal search:", error)
+      setFilteredProducts([])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Handle Search
@@ -145,7 +150,7 @@ export default function EcommerceLanding() {
         setIsLoading(false);
       }
     } else {
-      performNormalSearch(searchQuery);
+      await performNormalSearch(searchQuery);
       setAiRecommendation(null);
     }
   };

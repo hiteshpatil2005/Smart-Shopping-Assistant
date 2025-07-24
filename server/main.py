@@ -27,6 +27,20 @@ embedding = HuggingFaceEndpointEmbeddings(
 )
 sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
 
+
+class SimpleProduct(BaseModel):
+    title: str
+    price: float
+    rating: float
+    sentiment_score: float
+    sold: int
+    similarity_score: Optional[float]
+    images: Optional[List[str]] = []
+
+class SimpleSearchResponse(BaseModel):
+    products: List[SimpleProduct]
+
+
 class RecommendationRequest(BaseModel):
     query: str
 
@@ -239,6 +253,93 @@ async def shutdown_event():
 @app.get("/")
 def root():
     return {"message": "Smart Shopping Assistant Backend is running!"}
+
+
+@app.post("/simple-search", response_model=SimpleSearchResponse)
+async def simple_search(req: RecommendationRequest):
+    try:
+        #print("🔍 User query:", req.query)
+        result = chain.invoke({'query': req.query})
+        filters = format_output(result)
+        #print("🧠 Extracted filters:", filters)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Query parsing failed: {str(e)}")
+
+    df = await load_products_from_db()
+
+    # First filtering
+    filtered = filter_dataset(df, filters)
+
+    if filtered.empty:
+        # print("⚠️ No results after strict filtering. Relaxing...")
+        relaxed_filters = {
+            "product_type": filters.get("product_type"),
+            "price_max": None,
+            "price_min": None,
+            "use_case": None,
+            "recipient": None,
+            "must_have_features": [],
+            "brand_preference": None,
+            "avoid_features": [],
+            "urgency": None,
+        }
+        filtered = filter_dataset(df, relaxed_filters)
+
+        if filtered.empty:
+            # print("❌ Still no matches after relaxing filters.")
+            # Return empty product list instead of random products
+            return SimpleSearchResponse(products=[])
+
+    # Semantic match
+    matched = semantic_match(req.query, filtered)
+
+    # Add sentiment scores
+    matched = compute_sentiment_score(matched)
+
+    # Sort based on availability
+    if 'sold' in matched.columns and 'similarity_score' in matched.columns:
+        matched = matched.sort_values(by=['sold', 'similarity_score'], ascending=False)
+    elif 'similarity_score' in matched.columns:
+        matched = matched.sort_values(by='similarity_score', ascending=False)
+    elif 'sold' in matched.columns:
+        matched = matched.sort_values(by='sold', ascending=False)
+
+    # Convert to list of SimpleProduct
+    products = []
+    for _, row in matched.iterrows():
+        images = row.get("images", [])
+
+        # Handle NaN, None, or empty
+        if images is None or (isinstance(images, float) and pd.isna(images)):
+            images = []
+        # If it's a string, try to parse as JSON or treat as single image
+        elif isinstance(images, str):
+            try:
+                import json
+                parsed = json.loads(images)
+                if isinstance(parsed, list):
+                    images = parsed
+                else:
+                    images = [parsed]
+            except Exception:
+                images = [images]
+        # If it's a list or tuple, keep as is
+        elif isinstance(images, (list, tuple)):
+            images = list(images)
+        else:
+            images = [images]
+
+        products.append(SimpleProduct(
+            title=row.get('title', ''),
+            price=row.get('price', 0),
+            rating=row.get('rating', 0.0),
+            sentiment_score=row.get('sentiment_score', 0.0),
+            sold=row.get('sold', 0),
+            similarity_score=row.get('similarity_score'),
+            images=images
+        ))
+    return SimpleSearchResponse(products=products)
+
 
 @app.post("/recommend", response_model=RecommendationResponse)
 async def recommend_product(req: RecommendationRequest):
