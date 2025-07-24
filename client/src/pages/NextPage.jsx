@@ -38,7 +38,7 @@ const NextPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="pt-20 min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Header with back button */}
       <div className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
