@@ -47,7 +47,7 @@ const Footer = () => {
               },
               {
                 title: "Categories",
-                links: ["Electronics", "Fashion", "Home & Garden", "Sports"],
+                links: ["Home","Electronics", "Fashions", "Sports", "Books", "Home and Garden", "Gifts", "Health Care"],
               },
               {
                 title: "Customer Service",

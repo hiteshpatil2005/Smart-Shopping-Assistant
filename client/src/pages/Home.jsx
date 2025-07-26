@@ -22,6 +22,8 @@ import {
   Award,
   Users,
   CheckCircle,
+  GiftIcon,
+  HelpingHand,
 } from "lucide-react"
 import axios from 'axios'
 import { useNavigate } from "react-router-dom";
@@ -29,13 +31,13 @@ import { useNavigate } from "react-router-dom";
 
 const categories = [
   { name: "Home", icon: Home },
-  { name: "Mobile", icon: Smartphone },
+  { name: "Electronics", icon: Smartphone },
   { name: "Fashion", icon: Shirt },
   { name: "Sports", icon: Dumbbell },
   { name: "Books", icon: Book },
-  { name: "Beauty", icon: Sparkles },
-  { name: "Toys", icon: Gamepad2 },
-  { name: "Automotive", icon: Car },
+  { name: "Home and Garden", icon: Sparkles },
+  { name: "Gifts", icon: GiftIcon },
+  { name: "Health Care", icon: HelpingHand },
 ]
 
 export default function EcommerceLanding() {
@@ -196,13 +198,13 @@ export default function EcommerceLanding() {
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-16">
             <div className="inline-flex items-center space-x-2 bg-yellow-500/10 backdrop-blur-sm border border-yellow-500/20 rounded-full px-6 py-3 mb-8">
               <Zap className="w-5 h-5 text-yellow-400 animate-pulse" />
               <span className="text-yellow-300 font-semibold">AI-Powered Shopping Experience</span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-5xl md:text-5xl font-bold text-white mb-6 leading-tight">
               Find What You
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-500 animate-pulse">
                 Love to Buy
@@ -307,7 +309,7 @@ export default function EcommerceLanding() {
       </div>
 
       {/* Categories Section */}
-      <div className="pb-10 bg-gradient-to-br from-blue-800 to-blue-800 relative overflow-hidden">
+      <div className="p-10 bg-gradient-to-br from-blue-800 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div
             className="absolute inset-0"
@@ -319,23 +321,6 @@ export default function EcommerceLanding() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center space-x-2 bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 rounded-full px-6 py-3 mb-6">
-              <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-              <span className="text-yellow-300 font-semibold text-sm uppercase tracking-wider">Categories</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Shop by
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-500">
-                {" "}
-                Category
-              </span>
-            </h2>
-            <p className="text-blue-100 text-xl max-w-2xl mx-auto">
-              Explore our carefully curated product categories designed to help you find exactly what you need
-            </p>
-          </div>
-
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6">
             {categories.map((category, index) => {
               const IconComponent = category.icon
