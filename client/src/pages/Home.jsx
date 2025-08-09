@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import axios from 'axios'
 import { useNavigate } from "react-router-dom";
+import BannerCarousel from "../components/BannerCarousel";
 
 
 const categories = [
@@ -198,7 +199,7 @@ export default function EcommerceLanding() {
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="top-20 relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-16">
             <div className="inline-flex items-center space-x-2 bg-yellow-500/10 backdrop-blur-sm border border-yellow-500/20 rounded-full px-6 py-3 mb-8">
               <Zap className="w-5 h-5 text-yellow-400 animate-pulse" />
@@ -217,7 +218,7 @@ export default function EcommerceLanding() {
           </div>
 
           {/* Enhanced Search Section */}
-          <div className="max-w-5xl mx-auto">
+          <div className="pb-20 max-w-5xl mx-auto">
             <div className="flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-6">
               {/* Main Search Bar */}
               <div className="flex-1 w-full relative group">
@@ -511,6 +512,10 @@ export default function EcommerceLanding() {
 
       {/* Products Section */}
       <div className="py-16 bg-white">
+        {/* Moving Banners */}
+      <section className="mb-8">
+        <BannerCarousel />
+      </section>
         <div className="max-w-screen-2xl mx-auto px-1 sm:px-2 lg:px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-blue-900 mb-4">
