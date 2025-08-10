@@ -72,16 +72,16 @@ export default function EcommerceLanding() {
   }
 
   const fetchProducts = async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/api/products")
-      const allProducts = response.data
-      const random50 = allProducts.sort(() => Math.random() - 0.5).slice(0, 50)
-      setProducts(random50)
-      setFilteredProducts(random50)
-    } catch (error) {
-      console.error("Error fetching products:", error)
-    }
+  try {
+    const response = await axios.get("http://localhost:8000/api/products");
+    const allProducts = response.data;
+    setProducts(allProducts);
+    setFilteredProducts(allProducts);
+  } catch (error) {
+    console.error("Error fetching products:", error);
   }
+};
+
 
   // AI Recommendation Function
   const getAIRecommendation = async (query) => {
