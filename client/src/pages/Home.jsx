@@ -72,15 +72,15 @@ export default function EcommerceLanding() {
   }
 
   const fetchProducts = async () => {
-  try {
-    const response = await axios.get("http://localhost:8000/api/products");
-    const allProducts = response.data;
-    setProducts(allProducts);
-    setFilteredProducts(allProducts);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  }
-};
+    try {
+      const response = await axios.get("http://localhost:8000/api/products");
+      const allProducts = response.data;
+      setProducts(allProducts);
+      setFilteredProducts(allProducts);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
 
 
   // AI Recommendation Function
@@ -513,9 +513,9 @@ export default function EcommerceLanding() {
       {/* Products Section */}
       <div className="py-16 bg-white">
         {/* Moving Banners */}
-      <section className="mb-8">
-        <BannerCarousel />
-      </section>
+        <section className="mb-8">
+          <BannerCarousel />
+        </section>
         <div className="max-w-screen-2xl mx-auto px-1 sm:px-2 lg:px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-blue-900 mb-4">
@@ -532,7 +532,11 @@ export default function EcommerceLanding() {
               {filteredProducts.map((product) => {
                 const reviewCount = product.reviews?.length || product.reviewCount || 0;
                 return (
-                  <div key={product._id || product.id} className="group cursor-pointer hover:shadow-2xl transition-all duration-500 border border-gray-200 bg-white hover:border-yellow-500/30 hover:-translate-y-2 rounded-lg overflow-hidden">
+                  <div
+                    key={product._id || product.id}
+                    onClick={() => navigate(`/product/${product._id || product.id}`)} // navigate to detail page
+                    className="group cursor-pointer hover:shadow-2xl transition-all duration-500 border border-gray-200 bg-white hover:border-yellow-500/30 hover:-translate-y-2 rounded-lg overflow-hidden"
+                  >
                     <div className="relative aspect-square bg-gray-50 overflow-hidden">
                       <img
                         src={(product.images && product.images[0]) || "/placeholder.svg"}

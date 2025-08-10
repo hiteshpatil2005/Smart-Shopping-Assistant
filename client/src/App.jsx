@@ -1,14 +1,15 @@
 import React from 'react'
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom"
+import { Route, Routes, useLocation } from "react-router-dom"
 
-//Pages
+// Pages
 import Error from './pages/Error';
 import Home from './pages/Home';
+import ProductDetail from './pages/productDetails'; // <-- Import your ProductDetail page
+import NextPage from './pages/NextPage';
 
-//Components
+// Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import NextPage from './pages/NextPage';
 
 const App = () => {
   const pathname = useLocation().pathname;
@@ -17,19 +18,21 @@ const App = () => {
 
   return (
     <div>
-      {!NoNavbarRoutes.includes(pathname) && <Navbar/>}
+      {!NoNavbarRoutes.includes(pathname) && <Navbar />}
       <Routes>
-        {/* Public Routes  */}
+        {/* Public Routes */}
         <Route exact path='/' element={<Home />} /> 
         <Route exact path='/next-page' element={<NextPage />} /> 
 
-        {/* Error Route For 404 Eror  */}
-        <Route exact path='*' element={<Error />} />
+        {/* Product Detail Dynamic Route */}
+        <Route path='/product/:id' element={<ProductDetail />} /> 
+
+        {/* Error Route For 404 */}
+        <Route path='*' element={<Error />} />
       </Routes>
-      {!NoFooterRoutes.includes(pathname) && <Footer/>}
+      {!NoFooterRoutes.includes(pathname) && <Footer />}
     </div>
   )
 }
 
 export default App
-
