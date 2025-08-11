@@ -1,30 +1,5 @@
 import { useState, useEffect } from "react"
-import {
-  Search,
-  ShoppingCart,
-  User,
-  Heart,
-  Menu,
-  Sparkles,
-  Star,
-  ArrowRight,
-  Smartphone,
-  Shirt,
-  Home,
-  Dumbbell,
-  Book,
-  Gamepad2,
-  Car,
-  Zap,
-  ChevronDown,
-  Loader2,
-  TrendingUp,
-  Award,
-  Users,
-  CheckCircle,
-  GiftIcon,
-  HelpingHand,
-} from "lucide-react"
+import {Search, ShoppingCart, Heart, Sparkles, Star, ArrowRight, Smartphone, Shirt, Home, Dumbbell, Book, Zap, Loader2,TrendingUp, Award, Users, CheckCircle, GiftIcon, HelpingHand } from "lucide-react"
 import axios from 'axios'
 import { useNavigate } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel";
@@ -173,6 +148,7 @@ export default function EcommerceLanding() {
     setSearchPerformed(false)
     setSearchQuery("")
   }
+
 
   useEffect(() => {
     fetchProducts()
@@ -527,13 +503,19 @@ export default function EcommerceLanding() {
             </p>
           </div>
 
+          
+
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
               {filteredProducts.map((product) => {
+
+                const productKey = product._id || product.id;
+                console.log("Rendering product key:", productKey);
+
                 const reviewCount = product.reviews?.length || product.reviewCount || 0;
                 return (
                   <div
-                    key={product._id || product.id}
+                    key={productKey}
                     onClick={() => navigate(`/product/${product._id || product.id}`)} // navigate to detail page
                     className="group cursor-pointer hover:shadow-2xl transition-all duration-500 border border-gray-200 bg-white hover:border-yellow-500/30 hover:-translate-y-2 rounded-lg overflow-hidden"
                   >
@@ -597,6 +579,7 @@ export default function EcommerceLanding() {
                 )
               })}
             </div>
+
           ) : searchPerformed && !isAISearch ? (
             <div className="text-center py-12">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
