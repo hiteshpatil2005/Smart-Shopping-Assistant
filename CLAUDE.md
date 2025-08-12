@@ -68,4 +68,3 @@ The core components of the server application are:
 
 ### External Relationships
 The **server** serves API responses to the **client** and interacts with a database (details of which are abstracted by [database.py](server/database.py)) for data storage and retrieval.
-
