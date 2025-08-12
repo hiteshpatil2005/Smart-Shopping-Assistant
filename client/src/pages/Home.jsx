@@ -60,6 +60,7 @@ export default function EcommerceLanding() {
   const [searchPerformed, setSearchPerformed] = useState(false)
   const [showImageOptions, setShowImageOptions] = useState(false)
   const fileInputRef = useRef(null)
+  const cameraInputRef = useRef(null)
   
   // Get selected category from URL parameters
   const selectedCategory = searchParams.get('category') || '';
@@ -213,6 +214,7 @@ export default function EcommerceLanding() {
     setShowImageOptions(false)
   };
 
+
   // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -244,7 +246,7 @@ export default function EcommerceLanding() {
 
   // Trigger camera
   const triggerCamera = () => {
-    fileInputRef.current.click();
+    cameraInputRef.current.click();
   };
 
   // Trigger gallery
@@ -329,7 +331,7 @@ export default function EcommerceLanding() {
                   {isAISearch && (
                     <button
                       onClick={() => setShowImageOptions(!showImageOptions)}
-                      className="absolute right-28 top-2 bottom-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl transition-all duration-300 flex items-center justify-center"
+                      className="absolute right-16 top-2 bottom-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl transition-all duration-300 flex items-center justify-center"
                     >
                       <Camera className="w-5 h-5" />
                     </button>
@@ -345,7 +347,6 @@ export default function EcommerceLanding() {
                     ) : (
                       <>
                         <Search className="w-5 h-5" />
-                        <span>Search</span>
                       </>
                     )}
                   </button>
