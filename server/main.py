@@ -3,18 +3,26 @@ import ast
 import pandas as pd
 from dotenv import load_dotenv
 from products import router as products_router
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from statistics import mean
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import pipeline
+from transformers import pipeline, CLIPProcessor, CLIPModel
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from database import db
+from PIL import Image
+from io import BytesIO
+import torch
+import requests
+import json
+import datetime
+import numpy as np
+
 
 load_dotenv()
 hf_token = os.getenv("HF_TOKEN")
@@ -26,6 +34,26 @@ embedding = HuggingFaceEndpointEmbeddings(
     huggingfacehub_api_token=hf_token
 )
 sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+
+# ------------------- CLIP Model for Reverse Search -------------------
+device = "cuda" if torch.cuda.is_available() else "cpu"
+clip_model_name = "openai/clip-vit-base-patch32"
+clip_model = CLIPModel.from_pretrained(clip_model_name).to(device)
+clip_processor = CLIPProcessor.from_pretrained(clip_model_name)
+product_image_embeddings = []
+product_df_for_reverse = pd.DataFrame()
+
+def get_image_embedding(image: Image.Image):
+    inputs = clip_processor(images=image, return_tensors="pt").to(device)
+    with torch.no_grad():
+        emb = clip_model.get_image_features(**inputs)
+    return emb.cpu().numpy()
+
+def get_text_embedding(text: str):
+    inputs = clip_processor(text=[text], return_tensors="pt", padding=True).to(device)
+    with torch.no_grad():
+        emb = clip_model.get_text_features(**inputs)
+    return emb.cpu().numpy()
 
 
 class SimpleProduct(BaseModel):
@@ -238,6 +266,154 @@ def compute_sentiment_score(matched_df):
     matched_df['sentiment_score'] = scores
     return matched_df
 
+
+# ------------------- Reverse Search Data Preload -------------------
+async def preload_image_embeddings():
+    global product_image_embeddings, product_df_for_reverse
+    try:
+        print("🔄 Starting to preload image embeddings...")
+        
+        # First, try to load existing embeddings from MongoDB
+        existing_embeddings = await load_embeddings_from_db()
+        if existing_embeddings and len(existing_embeddings) > 0:
+            print(f"✅ Loaded {len(existing_embeddings)} existing embeddings from database")
+            product_image_embeddings = existing_embeddings
+            # Load the corresponding product data
+            df = await load_products_from_db()
+            df = df[df['images'].notna()]
+            product_df_for_reverse = df.reset_index(drop=True)
+            return
+        
+        # If no existing embeddings, generate new ones
+        print("🔄 No existing embeddings found, generating new ones...")
+        df = await load_products_from_db()
+        df = df[df['images'].notna()]
+        print(f"📊 Found {len(df)} products with images")
+        
+        image_urls = []
+        for imgs in df['images']:
+            if isinstance(imgs, list) and imgs:
+                image_urls.append(imgs[0])
+            elif isinstance(imgs, str):
+                image_urls.append(imgs)
+            else:
+                image_urls.append(None)
+        
+        df['image_url'] = image_urls
+        embeddings = []
+        successful_embeddings = 0
+        
+        for i, url in enumerate(image_urls):
+            if not url:
+                embeddings.append(None)
+                continue
+            try:
+                print(f"🖼️ Processing image {i+1}/{len(image_urls)}: {url[:50]}...")
+                resp = requests.get(url, timeout=10)
+                img = Image.open(BytesIO(resp.content)).convert("RGB")
+                emb = get_image_embedding(img)
+                embeddings.append(emb)
+                successful_embeddings += 1
+                
+                # Store embedding in MongoDB after each successful generation
+                print(f"💾 Storing embedding {i} in database...")
+                await store_embedding_in_db(i, url, emb)
+                
+            except Exception as e:
+                print(f"❌ Failed to process image {i+1}: {str(e)}")
+                embeddings.append(None)
+        
+        product_df_for_reverse = df.reset_index(drop=True)
+        product_image_embeddings = embeddings
+        
+        print(f"✅ Successfully preloaded {successful_embeddings}/{len(image_urls)} image embeddings")
+        
+    except Exception as e:
+        print(f"❌ Error preloading image embeddings: {str(e)}")
+        product_image_embeddings = []
+        product_df_for_reverse = pd.DataFrame()
+
+async def store_embedding_in_db(product_index: int, image_url: str, embedding):
+    """Store image embedding in MongoDB"""
+    try:
+        if db.db is None:
+            print(f"❌ Database not connected when trying to store embedding {product_index}")
+            return
+            
+        embedding_data = {
+            "product_index": product_index,
+            "image_url": image_url,
+            "embedding": embedding.tolist(),  # Convert numpy array to list for MongoDB storage
+            "created_at": datetime.datetime.utcnow()
+        }
+        
+        print(f"💾 Attempting to store embedding {product_index} with data size: {len(embedding_data['embedding'])}")
+        
+        # Check if embedding already exists
+        existing = await db.embeddings.find_one({"product_index": product_index})
+        if existing:
+            # Update existing embedding
+            result = await db.embeddings.update_one(
+                {"product_index": product_index},
+                {"$set": embedding_data}
+            )
+            print(f"✅ Updated embedding for product {product_index}, modified count: {result.modified_count}")
+        else:
+            # Insert new embedding
+            result = await db.embeddings.insert_one(embedding_data)
+            print(f"✅ Inserted embedding for product {product_index}, inserted id: {result.inserted_id}")
+            
+    except Exception as e:
+        print(f"❌ Error storing embedding for product {product_index}: {str(e)}")
+        print(f"   Error type: {type(e).__name__}")
+        print(f"   Database connection status: db.db = {db.db}")
+        try:
+            if db.db is not None:
+                collections = await db.list_collection_names()
+                print(f"   Available collections: {collections}")
+        except Exception as coll_error:
+            print(f"   Could not list collections: {coll_error}")
+
+async def load_embeddings_from_db():
+    """Load image embeddings from MongoDB"""
+    try:
+        if db.db is None:
+            print("⚠️ Database not connected, skipping embedding load")
+            return []
+            
+        print("🔍 Checking embeddings collection...")
+        try:
+            embeddings_count = await db.embeddings.count_documents({})
+            print(f"📊 Found {embeddings_count} embeddings in database")
+        except Exception as count_error:
+            print(f"⚠️ Could not count embeddings: {count_error}")
+            return []
+            
+        cursor = db.embeddings.find().sort("product_index", 1)
+        embeddings = []
+        async for doc in cursor:
+            try:
+                # Convert list back to numpy array
+                embedding_array = np.array(doc["embedding"])
+                embeddings.append(embedding_array)
+            except Exception as conv_error:
+                print(f"⚠️ Error converting embedding {doc.get('product_index', 'unknown')}: {conv_error}")
+                continue
+        
+        print(f"✅ Successfully loaded {len(embeddings)} embeddings from database")
+        return embeddings
+    except Exception as e:
+        print(f"❌ Error loading embeddings from database: {str(e)}")
+        print(f"   Error type: {type(e).__name__}")
+        print(f"   Database connection status: db.db = {db.db}")
+        try:
+            if db.db is not None:
+                collections = await db.list_collection_names()
+                print(f"   Available collections: {collections}")
+        except Exception as coll_error:
+            print(f"   Could not list collections: {coll_error}")
+        return []
+
 # ✅ FastAPI App Initialization with CORS
 app = FastAPI(title="Smart Shopping Assistant", description="Backend for Smart Shopping Assistant")
 
@@ -255,9 +431,27 @@ app.include_router(products_router, prefix="/api", tags=["products"])
 @app.on_event("startup")
 async def startup_event():
     try:
+        print("🚀 Starting Smart Shopping Assistant Backend...")
         await db.connect()
         await db.products.find_one()
-    except Exception:
+        print("✅ Database connected successfully")
+        print(f"🔍 Database object: {db}")
+        print(f"🔍 Database.db: {db.db}")
+        
+        # Check available collections
+        try:
+            collections = await db.list_collection_names()
+            print(f"📚 Available collections: {collections}")
+        except Exception as e:
+            print(f"⚠️ Could not list collections: {e}")
+        
+        # Preload image embeddings for reverse image search
+        print("🔄 Starting image embedding preload...")
+        await preload_image_embeddings()
+        print("✅ Startup completed successfully")
+        
+    except Exception as e:
+        print(f"❌ Startup error: {str(e)}")
         pass
 
 @app.on_event("shutdown")
@@ -267,6 +461,106 @@ async def shutdown_event():
 @app.get("/")
 def root():
     return {"message": "Smart Shopping Assistant Backend is running!"}
+
+@app.get("/status")
+async def status():
+    try:
+        # Check database connection
+        db_status = "connected" if db.db is not None else "disconnected"
+        collections = []
+        if db.db is not None:
+            try:
+                collections = await db.list_collection_names()
+            except Exception as e:
+                collections = [f"error: {str(e)}"]
+        
+        return {
+            "status": "running",
+            "database": db_status,
+            "collections": collections,
+            "image_search_ready": len(product_image_embeddings) > 0,
+            "products_loaded": len(product_df_for_reverse) if len(product_df_for_reverse) > 0 else 0,
+            "embeddings_loaded": len([e for e in product_image_embeddings if e is not None])
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+
+
+@app.get("/test-db")
+async def test_database():
+    """Test database connection and embedding storage"""
+    try:
+        if db.db is None:
+            return {"error": "Database not connected"}
+        
+        # Test basic database operations
+        collections = await db.list_collection_names()
+        
+        # Test if embeddings collection exists
+        embeddings_count = 0
+        try:
+            embeddings_count = await db.embeddings.count_documents({})
+        except Exception as e:
+            embeddings_count = f"error: {str(e)}"
+        
+        return {
+            "database_connected": True,
+            "collections": collections,
+            "embeddings_count": embeddings_count,
+            "db_object": str(db),
+            "db_db": str(db.db)
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+# ------------------- Reverse Image Search Endpoint -------------------
+@app.post("/reverse-search/image", response_model=SimpleSearchResponse)
+async def reverse_search_image(file: UploadFile = File(...), top_k: int = 3):
+    try:
+        # Check if image embeddings are loaded
+        if not product_image_embeddings or len(product_image_embeddings) == 0:
+            raise HTTPException(status_code=503, detail="Image search service not ready. Please try again in a moment.")
+        
+        img = Image.open(file.file).convert("RGB")
+        query_emb = get_image_embedding(img)
+        
+        similarities = []
+        for idx, emb in enumerate(product_image_embeddings):
+            if emb is not None:
+                sim = cosine_similarity(query_emb, emb)[0][0]
+                similarities.append((idx, sim))
+        
+        if not similarities:
+            raise HTTPException(status_code=404, detail="No similar products found")
+            
+        similarities = sorted(similarities, key=lambda x: x[1], reverse=True)[:top_k]
+        results = []
+        
+        for idx, sim in similarities:
+            row = product_df_for_reverse.iloc[idx]
+            results.append(SimpleProduct(
+                title=row.get('title', ''),
+                price=row.get('price', 0),
+                rating=row.get('rating', 0.0),
+                sentiment_score=0.0,
+                sold=row.get('sold', 0),
+                similarity_score=float(sim),
+                images=row.get('images', []),
+                category=row.get('category', None),
+                reviews=row.get('reviews', []) if isinstance(row.get('reviews', []), list) else []
+            ))
+        
+        return SimpleSearchResponse(products=results)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in reverse image search: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Image search failed: {str(e)}")
 
 
 @app.post("/simple-search", response_model=SimpleSearchResponse)

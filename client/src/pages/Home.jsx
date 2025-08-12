@@ -1,4 +1,3 @@
-// src/pages/EcommerceLanding.jsx
 import { useState, useEffect, useRef } from "react"
 import {
   useSearchParams,
@@ -32,6 +31,8 @@ import {
   HelpingHand,
   Camera,
   Image,
+  Upload,
+  X,
 } from "lucide-react"
 import axios from 'axios'
 import BannerCarousel from "../components/BannerCarousel";
@@ -59,6 +60,8 @@ export default function EcommerceLanding() {
   const [isLoading, setIsLoading] = useState(false)
   const [searchPerformed, setSearchPerformed] = useState(false)
   const [showImageOptions, setShowImageOptions] = useState(false)
+  const [imagePreview, setImagePreview] = useState(null)
+  const [isImageSearch, setIsImageSearch] = useState(false)
   const fileInputRef = useRef(null)
   const cameraInputRef = useRef(null)
   
@@ -108,6 +111,55 @@ export default function EcommerceLanding() {
     }
   };
 
+
+
+  // Image Search Function
+  const performImageSearch = async (imageFile, additionalQuery = "") => {
+    setIsLoading(true);
+    try {
+      console.log("🖼️ Starting image search with file:", imageFile.name, "Size:", imageFile.size);
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      formData.append('top_k', '10'); // Get top 10 results
+      
+      console.log("📤 Sending image search request to backend...");
+      const response = await axios.post("http://localhost:8000/reverse-search/image", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      console.log("✅ Image search successful:", response.data);
+      setFilteredProducts(response.data.products);
+      setSearchPerformed(true);
+      setIsImageSearch(true);
+      
+      // Update search query to show it's an image search with results count
+      const resultsCount = response.data.products.length;
+      setSearchQuery(additionalQuery ? 
+        `🖼️ Found ${resultsCount} similar products for: ${additionalQuery}` : 
+        `🖼️ Found ${resultsCount} similar products`
+      );
+      
+    } catch (error) {
+      console.error("❌ Error performing image search:", error);
+      setFilteredProducts([]);
+      
+      // Show user-friendly error message based on error type
+      if (error.response?.status === 503) {
+        alert("Image search service is starting up. Please wait a moment and try again.");
+      } else if (error.response?.status === 404) {
+        alert("No similar products found for this image. Try a different image or search term.");
+      } else {
+        alert("Image search failed. Please try again with a different image.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // AI Recommendation Function
   const getAIRecommendation = async (query) => {
     if (!query.trim()) return
@@ -148,9 +200,10 @@ export default function EcommerceLanding() {
 
   // Handle Search
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim() && !imagePreview) return;
 
     setSearchPerformed(true);
+    setIsImageSearch(false);
 
     if (isAISearch) {
       setIsLoading(true);
@@ -196,6 +249,8 @@ export default function EcommerceLanding() {
     setSearchPerformed(false)
     setSearchQuery("")
     setShowImageOptions(false)
+    setImagePreview(null)
+    setIsImageSearch(false)
   }
 
   // Update selected category in URL
@@ -211,37 +266,73 @@ export default function EcommerceLanding() {
     setSearchParams(searchParams);
     setSearchPerformed(false);
     setAiRecommendation(null);
-    setShowImageOptions(false)
+    setShowImageOptions(false);
+    setImagePreview(null);
+    setIsImageSearch(false);
   };
 
-
-  // Handle image upload
-  const handleImageUpload = (e) => {
+  // Handle image upload from gallery
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Create a URL for the image to show preview
-      const imageUrl = URL.createObjectURL(file);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file');
+      return;
+    }
+
+    try {
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+
+      // Perform search with file directly
+      await performImageSearch(file);
       
-      // Set search query to indicate image search
-      setSearchQuery("Searching with image...");
-      
-      // Simulate image processing
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        setSearchQuery("Products similar to your image");
-      }, 2000);
-      
-      // Here you would typically send the image to your backend
-      // For example: 
-      // const formData = new FormData();
-      // formData.append('image', file);
-      // axios.post('/api/image-search', formData)
+    } catch (error) {
+      console.error("Error processing image:", error);
+      alert("Error processing image. Please try again.");
     }
     
     // Reset the file input
     e.target.value = null;
     setShowImageOptions(false);
+  };
+
+  // Handle camera capture
+  const handleCameraCapture = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+
+      // Perform search with file directly
+      await performImageSearch(file);
+      
+    } catch (error) {
+      console.error("Error processing camera image:", error);
+      alert("Error processing image. Please try again.");
+    }
+    
+    // Reset the camera input
+    e.target.value = null;
+    setShowImageOptions(false);
+  };
+
+  // Clear image search
+  const clearImageSearch = () => {
+    setImagePreview(null);
+    setIsImageSearch(false);
+    setSearchQuery("");
+    setSearchPerformed(false);
+    setFilteredProducts(products);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
   };
 
   // Trigger camera
@@ -254,8 +345,26 @@ export default function EcommerceLanding() {
     fileInputRef.current.click();
   };
 
+  // Check backend status
+  const checkBackendStatus = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/status");
+      console.log("Backend status:", response.data);
+      
+      // Check if image search is ready
+      if (!response.data.image_search_ready) {
+        console.log("⚠️ Image search service not ready yet");
+      }
+    } catch (error) {
+      console.error("Backend status check failed:", error);
+    }
+  };
+
+
+
   useEffect(() => {
     fetchProducts()
+    checkBackendStatus()
   }, [])
 
   // Filter products by category
@@ -269,6 +378,15 @@ export default function EcommerceLanding() {
       setFilteredProducts(products)
     }
   }, [selectedCategory, products, searchPerformed])
+
+  // Cleanup image preview URLs on component unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -299,6 +417,36 @@ export default function EcommerceLanding() {
 
           {/* Enhanced Search Section */}
           <div className="pb-20 max-w-5xl mx-auto">
+            {/* Image Preview Section */}
+            {imagePreview && (
+              <div className="mb-8 flex justify-center">
+                <div className="relative inline-block">
+                  <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-2xl border border-white/20">
+                    <div className="flex items-center space-x-4">
+                      <img 
+                        src={imagePreview} 
+                        alt="Search image" 
+                        className="w-20 h-20 object-cover rounded-xl border-2 border-yellow-500/30"
+                      />
+                      <div className="flex-1">
+                        <p className="text-blue-900 font-semibold">🖼️ Image Search Active</p>
+                        <p className="text-blue-700 text-sm">
+                          {isLoading ? "Finding products similar to your image..." : 
+                           `Found ${filteredProducts.length} similar products`}
+                        </p>
+                      </div>
+                      <button
+                        onClick={clearImageSearch}
+                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors duration-200"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-6">
               {/* Main Search Bar */}
               <div className="flex-1 w-full relative group">
@@ -307,6 +455,11 @@ export default function EcommerceLanding() {
                   <div className="absolute inset-y-0 left-0 pl-8 flex items-center pointer-events-none">
                     {isLoading ? (
                       <Loader2 className="h-7 w-7 text-yellow-500 animate-spin" />
+                    ) : isImageSearch ? (
+                      <div className="relative">
+                        <Image className="h-7 w-7 text-yellow-500" />
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
+                      </div>
                     ) : isAISearch ? (
                       <div className="relative">
                         <Sparkles className="h-7 w-7 text-yellow-500" />
@@ -319,27 +472,30 @@ export default function EcommerceLanding() {
                   <input
                     type="text"
                     placeholder={
+                      isImageSearch ? "🖼️ Add text to refine image search..." :
                       isAISearch ? "✨ Ask me anything about products..." : "🔍 Search millions of products..."
                     }
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
                     className="w-full pl-20 pr-40 py-6 text-xl bg-white/95 backdrop-blur-sm border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-4xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
+                    disabled={isImageSearch && isLoading}
                   />
                   
                   {/* Camera icon - visible only in AI search mode */}
-                  {isAISearch && (
+                  {isAISearch && !imagePreview && (
                     <button
                       onClick={() => setShowImageOptions(!showImageOptions)}
-                      className="absolute right-16 top-2 bottom-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl transition-all duration-300 flex items-center justify-center"
+                      className="absolute right-16 top-2 bottom-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl transition-all duration-300 flex items-center justify-center group/camera"
+                      title="Search with image"
                     >
-                      <Camera className="w-5 h-5" />
+                      <Camera className="w-5 h-5 group-hover/camera:scale-110 transition-transform" />
                     </button>
                   )}
                   
                   <button
                     onClick={handleSearch}
-                    disabled={isLoading || !searchQuery.trim()}
+                    disabled={isLoading || (!searchQuery.trim() && !imagePreview)}
                     className="absolute right-2 top-2 bottom-2 px-4 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-blue-900 font-bold rounded-4xl transition-all duration-300 flex items-center space-x-2"
                   >
                     {isLoading ? (
@@ -352,7 +508,7 @@ export default function EcommerceLanding() {
                   </button>
                 </div>
                 
-                {/* Hidden file input for image upload */}
+                {/* Hidden file inputs */}
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -361,26 +517,59 @@ export default function EcommerceLanding() {
                   onChange={handleImageUpload}
                 />
                 
+                <input
+                  type="file"
+                  ref={cameraInputRef}
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleCameraCapture}
+                />
+                
                 {/* Image options popover */}
                 {showImageOptions && (
-                  <div className="absolute z-50 right-28 top-16 mt-2 w-56 rounded-xl bg-white shadow-2xl overflow-hidden border border-gray-200">
-                    <div className="py-1">
-                      <button
-                        onClick={triggerCamera}
-                        className="flex w-full items-center px-4 py-3 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                      >
-                        <Camera className="w-5 h-5 mr-3 text-blue-500" />
-                        <span>Take Photo</span>
-                      </button>
-                      <button
-                        onClick={triggerGallery}
-                        className="flex w-full items-center px-4 py-3 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                      >
-                        <Image className="w-5 h-5 mr-3 text-blue-500" />
-                        <span>Choose from Gallery</span>
-                      </button>
+                  <>
+                    {/* Backdrop */}
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setShowImageOptions(false)}
+                    />
+                    
+                    {/* Popover */}
+                    <div className="absolute z-50 right-28 top-16 mt-2 w-64 rounded-xl bg-white shadow-2xl overflow-hidden border border-gray-200">
+                      <div className="p-4 bg-gradient-to-r from-blue-600 to-blue-700">
+                        <h3 className="text-white font-semibold text-center">Search with Image</h3>
+                        <p className="text-blue-100 text-xs text-center mt-1">Find products similar to your photo</p>
+                      </div>
+                      <div className="py-2">
+                        <button
+                          onClick={triggerCamera}
+                          className="flex w-full items-center px-4 py-4 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                        >
+                          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
+                            <Camera className="w-6 h-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium">Take Photo</span>
+                            <p className="text-sm text-gray-500">Use camera to capture image</p>
+                          </div>
+                        </button>
+                        
+                        <button
+                          onClick={triggerGallery}
+                          className="flex w-full items-center px-4 py-4 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                        >
+                          <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-emerald-200 transition-colors">
+                            <Upload className="w-6 h-6 text-emerald-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium">Upload Image</span>
+                            <p className="text-sm text-gray-500">Choose from gallery</p>
+                          </div>
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
 
@@ -404,11 +593,13 @@ export default function EcommerceLanding() {
                 >
                   AI Search
                 </span>
+                
+                
               </div>
             </div>
 
             {/* AI Suggestions */}
-            {isAISearch && (
+            {isAISearch && !imagePreview && (
               <div className="mt-8 flex flex-wrap gap-4 justify-center">
                 {[
                   "Best gaming laptops under $1500",
@@ -503,7 +694,7 @@ export default function EcommerceLanding() {
           </div>
         </div>
       </div>
-
+      
       {/* AI Recommendation Section */}
       {aiRecommendation && (
         <div className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -636,11 +827,13 @@ export default function EcommerceLanding() {
         <div className="max-w-screen-2xl mx-auto px-1 sm:px-2 lg:px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-blue-900 mb-4">
-              {searchPerformed && !isAISearch ? `Search Results for "${searchQuery}"` :
-                selectedCategory ? `${selectedCategory} Products` : "All Products"}
+              {isImageSearch ? "🖼️ Similar Products Found" :
+               searchPerformed && !isAISearch ? `Search Results for "${searchQuery}"` :
+               selectedCategory ? `${selectedCategory} Products` : "All Products"}
             </h2>
             <p className="text-blue-700 text-lg">
-              {filteredProducts.length > 0 ? `${filteredProducts.length} products found` : "No products found"}
+              {isImageSearch ? `Found ${filteredProducts.length} products similar to your image` :
+               filteredProducts.length > 0 ? `${filteredProducts.length} products found` : "No products found"}
             </p>
           </div>
 
@@ -673,9 +866,17 @@ export default function EcommerceLanding() {
                     </div>
                     <div className="p-4 space-y-3">
                       <div className="space-y-2">
-                        <span className="bg-yellow-500/10 text-blue-900 text-xs font-medium border border-yellow-500/20 px-2 py-1 rounded-full inline-block">
-                          {product.category ? product.category : "N/A" }
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="bg-yellow-500/10 text-blue-900 text-xs font-medium border border-yellow-500/20 px-2 py-1 rounded-full inline-block">
+                            {product.category ? product.category : "N/A" }
+                          </span>
+                          {/* Show similarity score for image search results */}
+                          {isImageSearch && product.similarity_score && (
+                            <span className="bg-blue-500/10 text-blue-700 text-xs font-medium border border-blue-500/20 px-2 py-1 rounded-full">
+                              {Math.round(product.similarity_score * 100)}% Match
+                            </span>
+                          )}
+                        </div>
                         <h3 className="font-semibold text-blue-900 group-hover:text-yellow-500 transition-colors text-sm line-clamp-2">
                           {product.title}
                         </h3>

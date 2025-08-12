@@ -27,3 +27,11 @@ sentence-transformers
 # DB
 motor
 certifi
+
+
+torch 
+torchvision 
+pillow 
+transformers
+python-multipart
+requests
