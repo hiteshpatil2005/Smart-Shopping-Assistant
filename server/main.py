@@ -36,6 +36,8 @@ class SimpleProduct(BaseModel):
     sold: int
     similarity_score: Optional[float]
     images: Optional[List[str]] = []
+    category: Optional[str] = None  
+    reviews: Optional[List[str]] = []  
 
 class SimpleSearchResponse(BaseModel):
     products: List[SimpleProduct]
@@ -336,7 +338,9 @@ async def simple_search(req: RecommendationRequest):
             sentiment_score=row.get('sentiment_score', 0.0),
             sold=row.get('sold', 0),
             similarity_score=row.get('similarity_score'),
-            images=images
+            images=images,
+            category=row.get('category', None),  
+            reviews=row.get('reviews', []) if isinstance(row.get('reviews', []), list) else []  
         ))
     return SimpleSearchResponse(products=products)
 
