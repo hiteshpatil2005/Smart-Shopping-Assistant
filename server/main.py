@@ -4,7 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from products import router as products_router
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  # ✅ CORS import added
+from fastapi.middleware.cors import CORSMiddleware  
 from pydantic import BaseModel
 from typing import List, Optional
 from statistics import mean
@@ -36,6 +36,8 @@ class SimpleProduct(BaseModel):
     sold: int
     similarity_score: Optional[float]
     images: Optional[List[str]] = []
+    category: Optional[str] = None  
+    reviews: Optional[List[str]] = []  
 
 class SimpleSearchResponse(BaseModel):
     products: List[SimpleProduct]
@@ -70,10 +72,22 @@ class RankingResult(BaseModel):
     best_product_index: int
     reasoning: str
 
+CategoriesSubcategories = [
+    {
+        'Electronics': ['mobile', 'laptop','earphone','earbud','headpone','tv','smartwatch','camera','tablet','power bank','speaker'],
+        'Fashion' : ['jeans','shirt','shorts','kurta','shoes','tie','jacket','coat','blazer','trouser','suit','sunglasses','clog','hoodie','frock','bra','belt','wallet','pant','dress','sneaker','scarf','blouse','vest','hat','socks','bracelet','thong','bag'],
+        'Sports' : ['badminton racket','studs','football'],
+        'Books' : ['inspiration','fiction','comics','manga','productivity','self-help','finance','fantasy','science','history','cyberpunk','mystery'],
+        'Home and Garden' : ['mower','secateurs','axe','washer','hose','sheer'],
+        'Gifts' : ['perfume','clock','paperweight','vase','journal','decanter','garden kit','lamp','blanket','book'],
+        'Health Care' : ['glucometer','hair oil','blood pressure monitor','cider vinegar','whey','moisturizing cream','razor','oximeter','mouthwash','gel','lotion','juice','thermometer','toothbrush','cleanser','chyawanprash','tablet','nutrition drink','green tea','toothpaste','facewash','spray','energy powder','cream','balm','antiseptic','insect repellent']
+    }
+]
+
 parser = PydanticOutputParser(pydantic_object=Keywords)
 keywordExtractionPrompt = PromptTemplate(
-    template='Extract the following fields from the query: product_type, price_max, use_case, recipient, must_have_features, brand_preference, avoid_features, urgency\n\nQuery: {query}\n\n{format_instruction}',
-    input_variables=['query'],
+    template='Extract the following fields from the query: product_type, price_max, use_case, recipient, must_have_features, brand_preference, avoid_features, urgency\n\nQuery: {query} and for product_type only select one from the values {subcategory}\n\n{format_instruction}',
+    input_variables=['query','subcategory'],
     partial_variables={'format_instruction': parser.get_format_instructions()}
 )
 chain = keywordExtractionPrompt | model | parser
@@ -259,7 +273,7 @@ def root():
 async def simple_search(req: RecommendationRequest):
     try:
         #print("🔍 User query:", req.query)
-        result = chain.invoke({'query': req.query})
+        result = chain.invoke({'query': req.query,'subcategory':CategoriesSubcategories})
         filters = format_output(result)
         #print("🧠 Extracted filters:", filters)
     except Exception as e:
@@ -336,7 +350,9 @@ async def simple_search(req: RecommendationRequest):
             sentiment_score=row.get('sentiment_score', 0.0),
             sold=row.get('sold', 0),
             similarity_score=row.get('similarity_score'),
-            images=images
+            images=images,
+            category=row.get('category', None),  
+            reviews=row.get('reviews', []) if isinstance(row.get('reviews', []), list) else []  
         ))
     return SimpleSearchResponse(products=products)
 
@@ -344,7 +360,7 @@ async def simple_search(req: RecommendationRequest):
 @app.post("/recommend", response_model=RecommendationResponse)
 async def recommend_product(req: RecommendationRequest):
     try:
-        result = chain.invoke({'query': req.query})
+        result = chain.invoke({'query': req.query,'subcategory':CategoriesSubcategories})
         filters = format_output(result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Query parsing failed: {str(e)}")

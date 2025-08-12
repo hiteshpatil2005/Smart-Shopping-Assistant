@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Route, Routes, useLocation } from "react-router-dom"
 
 // Pages
 import Error from './pages/Error';
 import Home from './pages/Home';
-import ProductDetail from './pages/productDetails'; // <-- Import your ProductDetail page
+import ProductDetail from './pages/productDetails'; 
 import NextPage from './pages/NextPage';
 
 // Components
@@ -12,7 +12,14 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
 const App = () => {
-  const pathname = useLocation().pathname;
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  // Scroll to top on every route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   const NoNavbarRoutes = ["/login", "/signup"];
   const NoFooterRoutes = ["/login", "/signup"];
 

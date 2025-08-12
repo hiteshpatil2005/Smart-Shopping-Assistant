@@ -6,7 +6,7 @@
 
 ## Research Query
 
-regenerat it
+regenerate it
 
 *Session: 84e0416a8ba6cbfe688bada29834f1b1 | Generated: 7/14/2025, 4:18:05 PM*
 
@@ -68,4 +68,3 @@ The core components of the server application are:
 
 ### External Relationships
 The **server** serves API responses to the **client** and interacts with a database (details of which are abstracted by [database.py](server/database.py)) for data storage and retrieval.
-
