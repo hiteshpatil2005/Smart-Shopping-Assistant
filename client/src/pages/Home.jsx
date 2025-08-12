@@ -88,6 +88,8 @@ export default function EcommerceLanding() {
         query: query
       })
       setFilteredProducts(response.data.products)
+//console.log("product :", JSON.stringify(response.data.products, null, 2)) // ✅ Pretty-printed JSON
+
     } catch (error) {
       console.error("Error performing normal search:", error)
       setFilteredProducts([])
@@ -539,7 +541,7 @@ export default function EcommerceLanding() {
                     <div className="p-4 space-y-3">
                       <div className="space-y-2">
                         <span className="bg-yellow-500/10 text-blue-900 text-xs font-medium border border-yellow-500/20 px-2 py-1 rounded-full inline-block">
-                          {product.category}
+                          {product.category ? product.category : "N/A" }
                         </span>
                         <h3 className="font-semibold text-blue-900 group-hover:text-yellow-500 transition-colors text-sm line-clamp-2">
                           {product.title}
