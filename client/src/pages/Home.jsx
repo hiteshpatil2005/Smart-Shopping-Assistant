@@ -1,5 +1,5 @@
 // src/pages/EcommerceLanding.jsx
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   useSearchParams,
   useNavigate,
@@ -30,6 +30,8 @@ import {
   CheckCircle,
   GiftIcon,
   HelpingHand,
+  Camera,
+  Image,
 } from "lucide-react"
 import axios from 'axios'
 import BannerCarousel from "../components/BannerCarousel";
@@ -56,6 +58,8 @@ export default function EcommerceLanding() {
   const [filteredProducts, setFilteredProducts] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchPerformed, setSearchPerformed] = useState(false)
+  const [showImageOptions, setShowImageOptions] = useState(false)
+  const fileInputRef = useRef(null)
   
   // Get selected category from URL parameters
   const selectedCategory = searchParams.get('category') || '';
@@ -133,8 +137,6 @@ export default function EcommerceLanding() {
         query: query
       })
       setFilteredProducts(response.data.products)
-//console.log("product :", JSON.stringify(response.data.products, null, 2)) // ✅ Pretty-printed JSON
-
     } catch (error) {
       console.error("Error performing normal search:", error)
       setFilteredProducts([])
@@ -192,6 +194,7 @@ export default function EcommerceLanding() {
     setFilteredProducts(products)
     setSearchPerformed(false)
     setSearchQuery("")
+    setShowImageOptions(false)
   }
 
   // Update selected category in URL
@@ -207,6 +210,46 @@ export default function EcommerceLanding() {
     setSearchParams(searchParams);
     setSearchPerformed(false);
     setAiRecommendation(null);
+    setShowImageOptions(false)
+  };
+
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Create a URL for the image to show preview
+      const imageUrl = URL.createObjectURL(file);
+      
+      // Set search query to indicate image search
+      setSearchQuery("Searching with image...");
+      
+      // Simulate image processing
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setSearchQuery("Products similar to your image");
+      }, 2000);
+      
+      // Here you would typically send the image to your backend
+      // For example: 
+      // const formData = new FormData();
+      // formData.append('image', file);
+      // axios.post('/api/image-search', formData)
+    }
+    
+    // Reset the file input
+    e.target.value = null;
+    setShowImageOptions(false);
+  };
+
+  // Trigger camera
+  const triggerCamera = () => {
+    fileInputRef.current.click();
+  };
+
+  // Trigger gallery
+  const triggerGallery = () => {
+    fileInputRef.current.click();
   };
 
   useEffect(() => {
@@ -279,8 +322,19 @@ export default function EcommerceLanding() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="w-full pl-20 pr-32 py-6 text-xl bg-white/95 backdrop-blur-sm border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-4xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
+                    className="w-full pl-20 pr-40 py-6 text-xl bg-white/95 backdrop-blur-sm border-white/20 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 focus:outline-none rounded-4xl shadow-2xl placeholder:text-gray-500 text-blue-900 font-medium"
                   />
+                  
+                  {/* Camera icon - visible only in AI search mode */}
+                  {isAISearch && (
+                    <button
+                      onClick={() => setShowImageOptions(!showImageOptions)}
+                      className="absolute right-28 top-2 bottom-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl transition-all duration-300 flex items-center justify-center"
+                    >
+                      <Camera className="w-5 h-5" />
+                    </button>
+                  )}
+                  
                   <button
                     onClick={handleSearch}
                     disabled={isLoading || !searchQuery.trim()}
@@ -296,6 +350,37 @@ export default function EcommerceLanding() {
                     )}
                   </button>
                 </div>
+                
+                {/* Hidden file input for image upload */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                
+                {/* Image options popover */}
+                {showImageOptions && (
+                  <div className="absolute z-50 right-28 top-16 mt-2 w-56 rounded-xl bg-white shadow-2xl overflow-hidden border border-gray-200">
+                    <div className="py-1">
+                      <button
+                        onClick={triggerCamera}
+                        className="flex w-full items-center px-4 py-3 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                      >
+                        <Camera className="w-5 h-5 mr-3 text-blue-500" />
+                        <span>Take Photo</span>
+                      </button>
+                      <button
+                        onClick={triggerGallery}
+                        className="flex w-full items-center px-4 py-3 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                      >
+                        <Image className="w-5 h-5 mr-3 text-blue-500" />
+                        <span>Choose from Gallery</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* AI Toggle */}
