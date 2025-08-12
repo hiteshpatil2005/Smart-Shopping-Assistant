@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Search,
   ShoppingCart,
@@ -20,6 +21,22 @@ import {
 } from "lucide-react"
 
 const Navbar = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleCategoryClick = () => {
+    if (location.pathname === '/') {
+      // If already on home page, scroll to categories
+      const section = document.getElementById('categories-section');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // If on another page, navigate to home then scroll
+      navigate('/#categories-section');
+    }
+  };
+
   return (
     <div>
        <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 shadow-2xl border-b-4 border-yellow-500">
@@ -42,13 +59,13 @@ const Navbar = () => {
             {/* Enhanced Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <div className="flex items-center space-x-6">
-                <a
-                  href="#"
+                <button 
+                  onClick={handleCategoryClick}
                   className="text-white hover:text-yellow-300 font-medium transition-colors duration-200 flex items-center space-x-1"
                 >
                   <span>Categories</span>
                   <ChevronDown className="w-4 h-4" />
-                </a>
+                </button>
                 <a href="#" className="text-white hover:text-yellow-300 font-medium transition-colors duration-200">
                   Deals
                 </a>

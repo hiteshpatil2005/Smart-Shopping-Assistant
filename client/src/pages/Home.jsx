@@ -1,9 +1,42 @@
+// src/pages/EcommerceLanding.jsx
 import { useState, useEffect } from "react"
+<<<<<<< HEAD
+import {
+  useSearchParams,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Heart,
+  Menu,
+  Sparkles,
+  Star,
+  ArrowRight,
+  Smartphone,
+  Shirt,
+  Home,
+  Dumbbell,
+  Book,
+  Gamepad2,
+  Car,
+  Zap,
+  ChevronDown,
+  Loader2,
+  TrendingUp,
+  Award,
+  Users,
+  CheckCircle,
+  GiftIcon,
+  HelpingHand,
+} from "lucide-react"
+=======
 import {Search, ShoppingCart, Heart, Sparkles, Star, ArrowRight, Smartphone, Shirt, Home, Dumbbell, Book, Zap, Loader2,TrendingUp, Award, Users, CheckCircle, GiftIcon, HelpingHand } from "lucide-react"
+>>>>>>> d7dffc42d42c1f54d5fcc178950c006869ec1765
 import axios from 'axios'
-import { useNavigate } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel";
-
 
 const categories = [
   { name: "Home", icon: Home },
@@ -17,14 +50,31 @@ const categories = [
 ]
 
 export default function EcommerceLanding() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isAISearch, setIsAISearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("")
   const [products, setProducts] = useState([])
   const [aiRecommendation, setAiRecommendation] = useState(null)
   const [filteredProducts, setFilteredProducts] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchPerformed, setSearchPerformed] = useState(false)
+  
+  // Get selected category from URL parameters
+  const selectedCategory = searchParams.get('category') || '';
+
+  useEffect(() => {
+    // Scroll to categories section if URL has hash
+    if (location.hash === '#categories-section') {
+      const section = document.getElementById('categories-section');
+      if (section) {
+        setTimeout(() => {
+          section.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+      }
+    }
+  }, [location]);
 
   const getBadge = (sold, rating) => {
     if (sold > 30000) return "Best Seller"
@@ -56,7 +106,6 @@ export default function EcommerceLanding() {
       console.error("Error fetching products:", error);
     }
   };
-
 
   // AI Recommendation Function
   const getAIRecommendation = async (query) => {
@@ -99,8 +148,6 @@ export default function EcommerceLanding() {
   }
 
   // Handle Search
-  const navigate = useNavigate();
-
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
@@ -151,6 +198,20 @@ export default function EcommerceLanding() {
     setSearchQuery("")
   }
 
+  // Update selected category in URL
+  const handleCategoryClick = (categoryName) => {
+    const newCategory = selectedCategory === categoryName ? '' : categoryName;
+    
+    if (newCategory) {
+      searchParams.set('category', newCategory);
+    } else {
+      searchParams.delete('category');
+    }
+    
+    setSearchParams(searchParams);
+    setSearchPerformed(false);
+    setAiRecommendation(null);
+  };
 
   useEffect(() => {
     fetchProducts()
@@ -288,7 +349,7 @@ export default function EcommerceLanding() {
       </div>
 
       {/* Categories Section */}
-      <div className="p-10 bg-gradient-to-br from-blue-800 to-blue-800 relative overflow-hidden">
+      <div id="categories-section" className="p-10 bg-gradient-to-br from-blue-800 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div
             className="absolute inset-0"
@@ -309,11 +370,7 @@ export default function EcommerceLanding() {
                 <div
                   key={index}
                   className="group cursor-pointer"
-                  onClick={() => {
-                    setSelectedCategory(isSelected ? "" : category.name)
-                    setSearchPerformed(false)
-                    setAiRecommendation(null)
-                  }}
+                  onClick={() => handleCategoryClick(category.name)}
                 >
                   <div className="relative">
                     <div
@@ -517,6 +574,8 @@ export default function EcommerceLanding() {
                 const reviewCount = product.reviews?.length || product.reviewCount || 0;
                 return (
                   <div
+                    key={product._id || product.id}
+                    onClick={() => navigate(`/product/${product._id || product.id}${selectedCategory ? `?category=${selectedCategory}` : ''}`)}
                     key={productKey}
                     onClick={() => navigate(`/product/${product._id || product.id}`)} // navigate to detail page
                     className="group cursor-pointer hover:shadow-2xl transition-all duration-500 border border-gray-200 bg-white hover:border-yellow-500/30 hover:-translate-y-2 rounded-lg overflow-hidden"
@@ -604,5 +663,5 @@ export default function EcommerceLanding() {
         </div>
       </div>
     </div>
-  )
+  );
 }
