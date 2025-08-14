@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 # Get MongoDB connection string from environment variable
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://hiteshpatil2005:HDPatil%402005@cluster0.rkbgruy.mongodb.net/smartShopDB?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=false")
+MONGO_URI = os.getenv("//mongodb uri")
 
 class Database:
     def __init__(self):
